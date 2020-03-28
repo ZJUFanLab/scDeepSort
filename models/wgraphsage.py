@@ -70,3 +70,30 @@ class WGraphSAGE(nn.Module):
         h = nf.layers[-1].data.pop('activation')
         h = self.linear(h)
         return h
+
+    def evaluate(self, nf: dgl.NodeFlow):
+        def message_func(edges: dgl.EdgeBatch):
+            # edges.src['h']： (number of edges, feature dim)
+            number_of_edges = edges.src['h'].shape[0]
+            indices = np.expand_dims(np.array([self.gene_num + 1] * number_of_edges, dtype=np.int32), axis=1)
+            src_id, dst_id = edges.src['id'].cpu().numpy(), edges.dst['id'].cpu().numpy()
+            indices = np.where((src_id >= 0) & (dst_id < 0), src_id, indices)  # gene->cell
+            indices = np.where((dst_id >= 0) & (src_id < 0), dst_id, indices)  # cell->gene
+            indices = np.where((dst_id >= 0) & (src_id >= 0), self.gene_num, indices)  # gene-gene
+            # h = torch.stack([h[i] * self.alpha[indices[i, 0]] if indices[i, 0] >= 0 else h[i] for i in
+            #                  range(number_of_edges)])  # h*alpha
+            h = edges.src['h'].cpu() * self.alpha[indices.squeeze()]
+            return {'m': h * edges.data['weight'].cpu()}
+
+        self.to(torch.device('cpu'))
+        nf.layers[0].data['activation'] = nf.layers[0].data['features'].cpu()
+        # nf.layers[1].data['h'] = nf.layers[1].data['features']
+        for i, layer in enumerate(self.layers):
+            h = nf.layers[i].data.pop('activation')
+            if self.dropout:
+                h = self.dropout(h)
+            nf.layers[i].data['h'] = h
+            nf.block_compute(i, message_func, fn.mean('m', 'neigh'), layer)
+        h = nf.layers[-1].data.pop('activation')
+        h = self.linear(h)
+        return h
