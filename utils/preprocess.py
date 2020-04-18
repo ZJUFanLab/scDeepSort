@@ -72,7 +72,10 @@ def get_id_2_label(cell_statistics_path, species_data_path, tissue, train_dir: s
         cell_files = data_path.glob(f'*{tissue}*_celltype.csv')
         cell_types = set()
         for file in cell_files:
-            cell_types = set(pd.read_csv(file, dtype=np.str, header=0).values[:, 2]) | cell_types
+            df = pd.read_csv(file, dtype=np.str, header=0)
+            df['Cell_type'] = df['Cell_type'].map(str.strip)
+            cell_types = set(df.values[:, 2]) | cell_types
+            # cell_types = set(pd.read_csv(file, dtype=np.str, header=0).values[:, 2]) | cell_types
         id2label = list(cell_types)
         with open(cell_statistics_path, 'w', encoding='utf-8') as f:
             for cell_type in id2label:
@@ -211,6 +214,7 @@ def load_data(params):
         # load celltype file then update labels accordingly
         cell2type = pd.read_csv(type_path, index_col=0)
         cell2type.columns = ['cell', 'type']
+        cell2type['type'] = cell2type['type'].map(str.strip)
         if num in train:
             cell2type['id'] = cell2type['type'].map(label2id)
             assert not cell2type['id'].isnull().any(), 'something wrong about celltype file.'

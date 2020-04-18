@@ -70,6 +70,8 @@ class Trainer:
                                                        seed_nodes=self.train_nid,
                                                        transition_prob=self.train_graph.edata['weight'].view(
                                                            -1).cpu())):
+                if not self.params.evaluate_on_gpu:
+                    self.model.to(self.device)
                 self.model.train()
                 nf.copy_from_parent()  # Copy node/edge features from the parent graph.
                 logits = self.model(nf)
@@ -128,6 +130,8 @@ class Trainer:
 
     def evaluate_train(self):
         self.model.eval()
+        if not self.params.evaluate_on_gpu:
+            self.model.cpu()
         total_train_correct = 0
         for nf in NeighborSampler(g=self.train_graph,
                                   batch_size=self.params.batch_size,
@@ -139,14 +143,21 @@ class Trainer:
                                   seed_nodes=self.train_nid):
             nf.copy_from_parent()  # Copy node/edge features from the parent graph.
             with torch.no_grad():
-                logits = self.model(nf)
-                # logits = self.model.evaluate(nf)
+                if self.params.evaluate_on_gpu:
+                    logits = self.model(nf)
+                else:
+                    logits = self.model.evaluate(nf)
             batch_nids = nf.layer_parent_nid(-1).type(torch.long)
             _, indices = torch.max(logits, dim=1)
-            total_train_correct += torch.sum(indices == self.train_labels[batch_nids]).item()
+            if self.params.evaluate_on_gpu:
+                total_train_correct += torch.sum(indices == self.train_labels[batch_nids]).item()
+            else:
+                total_train_correct += torch.sum(indices == self.train_labels[batch_nids].cpu()).item()
         return total_train_correct
 
     def evaluate_test(self, num):
+        if not self.params.evaluate_on_gpu:
+            self.model.cpu()
         self.model.eval()
         new_logits = torch.zeros((self.test_dict['graph'][num].number_of_nodes(), self.num_classes))
         for nf in NeighborSampler(g=self.test_dict['graph'][num],
@@ -159,8 +170,10 @@ class Trainer:
                                   seed_nodes=self.test_dict['nid'][num]):
             nf.copy_from_parent()  # Copy node/edge features from the parent graph.
             with torch.no_grad():
-                # logits = self.model.evaluate(nf)
-                logits = self.model(nf).cpu()
+                if self.params.evaluate_on_gpu:
+                    logits = self.model(nf).cpu()
+                else:
+                    logits = self.model.evaluate(nf)
             batch_nids = nf.layer_parent_nid(-1).type(torch.long)
             # batch_nids = self.test_graph[num].parent_nid[batch_nids]  # map ids from subgraph to parent graph
             new_logits[batch_nids] = logits
@@ -183,8 +196,9 @@ class Trainer:
         for num in self.params.test_dataset:
             df = pd.DataFrame({'original label': self.test_dict['label'][num],
                                'prediction': self.final_record[num]['pred']})
-            df.to_csv(save_path / (self.params.species + '_' + f"{self.params.tissue}_{num}.csv" + '_' + self.postfix),
-                      index=False)
+            df.to_csv(
+                save_path / (self.params.species + f"_{self.params.tissue}_{num}_" + self.postfix + ".csv"),
+                index=False)
             # np.savetxt(save_path / f"{self.params.tissue}_{num}.txt", self.final_record[num]['pred'], fmt="%s",
             #            delimiter="\n")
 
@@ -210,14 +224,20 @@ if __name__ == '__main__':
     python ./code/run.py --species human --tissue Blood --train_dataset 2719 5296 2156 7160 --test_dataset 9649 3223 2469 --gpu "${gpu_id}" --log_file "${log_file}"
     python ./code/run.py --species human --tissue Brain --train_dataset 7324 --test_dataset 251 2892 1834 --gpu "${gpu_id}" --log_file "${log_file}"
     python ./code/run.py --species human --tissue Colorectum --train_dataset 4681 3367 5549 5718 3281 5765 11229 --test_dataset 94 11894 --gpu "${gpu_id}" --log_file "${log_file}"
-    python ./code/run.py --species human --tissue Esophagus --train_dataset 2696 8668 --test_dataset 16999 17001 16469 --gpu "${gpu_id}" --log_file "${log_file}"
+    python ./code/run.py --species human --tissue Esophagus --train_dataset 2696 8668 --test_dataset 16999 --gpu "${gpu_id}" --log_file "${log_file}"
+    python ./code/run.py --species human --tissue Esophagus --train_dataset 2696 8668 --test_dataset 17001 --gpu "${gpu_id}" --log_file "${log_file}"
+    python ./code/run.py --species human --tissue Esophagus --train_dataset 2696 8668 --test_dataset 16469 --gpu "${gpu_id}" --log_file "${log_file}"
     python ./code/run.py --species human --tissue Fetal_kidney --train_dataset 4734 9932 3057 --test_dataset 540 --gpu "${gpu_id}" --log_file "${log_file}"
-    python ./code/run.py --species human --tissue Kidney --train_dataset 9153 9966 3849 --test_dataset 5765 --gpu "${gpu_id}" --log_file "${log_file}"
+    python ./code/run.py --species human --tissue Kidney --train_dataset 9153 9966 3849 --test_dataset 5675 --gpu "${gpu_id}" --log_file "${log_file}"
     python ./code/run.py --species human --tissue Liver --train_dataset 1811 4377 4384 --test_dataset 3502 298 5105 --gpu "${gpu_id}" --log_file "${log_file}"
-    python ./code/run.py --species human --tissue Lung --train_dataset 6022 9603 --test_dataset 2064 9566 6338 7211 10743 11204 4624 2841 --gpu "${gpu_id}" --log_file "${log_file}"
+    python ./code/run.py --species human --tissue Lung --train_dataset 6022 9603 --test_dataset 2064 6338 7211 10743 --gpu "${gpu_id}" --log_file "${log_file}"
+    python ./code/run.py --species human --tissue Lung --train_dataset 6022 9603 --test_dataset 11204 4624 2841 9566 --gpu "${gpu_id}" --log_file "${log_file}"
     python ./code/run.py --species human --tissue Pancreas --train_dataset 9727 --test_dataset 465 958 20 185 15 11 --gpu "${gpu_id}" --log_file "${log_file}"
     python ./code/run.py --species human --tissue Placenta --train_dataset 9595 --test_dataset 615 --gpu "${gpu_id}" --log_file "${log_file}"
-    python ./code/run.py --species human --tissue Spleen --train_dataset 15806 --test_dataset 18513 16286 11081 14848 9887 --gpu "${gpu_id}" --log_file "${log_file}"
+    python ./code/run.py --species human --tissue Spleen --train_dataset 15806 --test_dataset 11081 9887 --gpu "${gpu_id}" --log_file "${log_file}"
+    python ./code/run.py --species human --tissue Spleen --train_dataset 15806 --test_dataset 18513 --gpu "${gpu_id}" --log_file "${log_file}"
+    python ./code/run.py --species human --tissue Spleen --train_dataset 15806 --test_dataset 16286 --gpu "${gpu_id}" --log_file "${log_file}"
+    python ./code/run.py --species human --tissue Spleen --train_dataset 15806 --test_dataset 14848 --gpu "${gpu_id}" --log_file "${log_file}"
     python ./code/run.py --species human
     python ./code/run.py --species human
     """
@@ -256,7 +276,10 @@ if __name__ == '__main__':
     parser.add_argument("--train_dir", type=str, default='train')
     parser.add_argument("--test_dir", type=str, default='test')
     parser.add_argument("--save_dir", type=str, default='result')
-    parser.set_defaults(g2g=True)
+    parser.add_argument("--evaluate-on-gpu", dest='evaluate_on_gpu', action='store_true')
+    parser.add_argument("--evaluate-on-cpu", dest='evaluate_on_gpu', action='store_false')
+    parser.set_defaults(g2g=False)
+    parser.set_defaults(evaluate_on_gpu=True)
     params = parser.parse_args()
     pprint(vars(params))
 

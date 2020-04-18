@@ -85,7 +85,6 @@ class WGraphSAGE(nn.Module):
             h = edges.src['h'].cpu() * self.alpha[indices.squeeze()]
             return {'m': h * edges.data['weight'].cpu()}
 
-        self.to(torch.device('cpu'))
         nf.layers[0].data['activation'] = nf.layers[0].data['features'].cpu()
         # nf.layers[1].data['h'] = nf.layers[1].data['features']
         for i, layer in enumerate(self.layers):
