@@ -25,9 +25,9 @@ class NodeUpdate(nn.Module):
         return {'activation': h_neigh}
 
 
-class WGraphSAGE(nn.Module):
+class GNN(nn.Module):
     def __init__(self, in_feats, n_hidden, n_classes, n_layers, gene_num, activation=None, norm=None, dropout=0.0):
-        super(WGraphSAGE, self).__init__()
+        super(GNN, self).__init__()
         self.n_layers = n_layers
         self.gene_num = gene_num
         if dropout != 0:
@@ -38,7 +38,6 @@ class WGraphSAGE(nn.Module):
         self.layers.append(NodeUpdate(in_feats=in_feats, out_feats=n_hidden, activation=activation, norm=norm))
         for _ in range(n_layers - 1):
             self.layers.append(NodeUpdate(in_feats=n_hidden, out_feats=n_hidden, activation=activation, norm=norm))
-        # self.alpha = nn.ParameterList(nn.Parameter(torch.tensor([1], dtype=torch.float32)) for _ in range(gene_num))
 
         # [gene_num] is alpha of gene-gene, [gene_num+1] is alpha of cell-cell self loop
         self.alpha = nn.Parameter(torch.tensor([1] * (self.gene_num + 2), dtype=torch.float32).unsqueeze(-1))
@@ -46,21 +45,18 @@ class WGraphSAGE(nn.Module):
         nn.init.xavier_uniform_(self.linear.weight, gain=nn.init.calculate_gain('relu'))
 
     def message_func(self, edges: dgl.EdgeBatch):
-        # edges.src['h']： (number of edges, feature dim)
         number_of_edges = edges.src['h'].shape[0]
         indices = np.expand_dims(np.array([self.gene_num + 1] * number_of_edges, dtype=np.int32), axis=1)
         src_id, dst_id = edges.src['id'].cpu().numpy(), edges.dst['id'].cpu().numpy()
         indices = np.where((src_id >= 0) & (dst_id < 0), src_id, indices)  # gene->cell
         indices = np.where((dst_id >= 0) & (src_id < 0), dst_id, indices)  # cell->gene
         indices = np.where((dst_id >= 0) & (src_id >= 0), self.gene_num, indices)  # gene-gene
-        # h = torch.stack([h[i] * self.alpha[indices[i, 0]] if indices[i, 0] >= 0 else h[i] for i in
-        #                  range(number_of_edges)])  # h*alpha
         h = edges.src['h'] * self.alpha[indices.squeeze()]
+        # return {'m': h}
         return {'m': h * edges.data['weight']}
 
     def forward(self, nf: dgl.NodeFlow):
         nf.layers[0].data['activation'] = nf.layers[0].data['features']
-        # nf.layers[1].data['h'] = nf.layers[1].data['features']
         for i, layer in enumerate(self.layers):
             h = nf.layers[i].data.pop('activation')
             if self.dropout:
@@ -80,13 +76,10 @@ class WGraphSAGE(nn.Module):
             indices = np.where((src_id >= 0) & (dst_id < 0), src_id, indices)  # gene->cell
             indices = np.where((dst_id >= 0) & (src_id < 0), dst_id, indices)  # cell->gene
             indices = np.where((dst_id >= 0) & (src_id >= 0), self.gene_num, indices)  # gene-gene
-            # h = torch.stack([h[i] * self.alpha[indices[i, 0]] if indices[i, 0] >= 0 else h[i] for i in
-            #                  range(number_of_edges)])  # h*alpha
             h = edges.src['h'].cpu() * self.alpha[indices.squeeze()]
             return {'m': h * edges.data['weight'].cpu()}
 
         nf.layers[0].data['activation'] = nf.layers[0].data['features'].cpu()
-        # nf.layers[1].data['h'] = nf.layers[1].data['features']
         for i, layer in enumerate(self.layers):
             h = nf.layers[i].data.pop('activation')
             if self.dropout:

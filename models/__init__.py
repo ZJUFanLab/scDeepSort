@@ -1,2 +1,1 @@
-from .graphsage import GraphSAGE
-from .wgraphsage import WGraphSAGE
+from .gnn import GNN

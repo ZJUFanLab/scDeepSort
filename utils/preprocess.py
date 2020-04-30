@@ -6,11 +6,10 @@ from time import time
 import torch
 import torch.nn.functional as F
 import collections
-from scipy.sparse import csr_matrix, vstack
+from scipy.sparse import csr_matrix, vstack, load_npz
 from sklearn.decomposition import PCA
 from pathlib import Path
 import numpy as np
-import pprint
 
 
 def get_map_dict(species_data_path: Path, tissue):
@@ -42,88 +41,34 @@ def normalize_weight(graph: dgl.DGLGraph):
         graph.edata['weight'][in_edge_id] = in_degrees[i] * edge_w / torch.sum(edge_w)
 
 
-def get_id_2_gene(gene_statistics_path, species_data_path, tissue, train_dir: str):
-    if not gene_statistics_path.exists():
-        data_path = species_data_path / train_dir
-        data_files = data_path.glob(f'*{tissue}*_data.csv')
-        genes = None
-        for file in data_files:
-            data = pd.read_csv(file, dtype=np.str, header=0).values[:, 0]
-            if genes is None:
-                genes = set(data)
-            else:
-                genes = genes | set(data)
-        id2gene = list(genes)
-        id2gene.sort()
-        with open(gene_statistics_path, 'w', encoding='utf-8') as f:
-            for gene in id2gene:
-                f.write(gene + '\r\n')
-    else:
-        id2gene = []
-        with open(gene_statistics_path, 'r', encoding='utf-8') as f:
-            for line in f:
-                id2gene.append(line.strip())
+def get_id_2_gene(gene_statistics_path):
+    id2gene = []
+    with open(gene_statistics_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            id2gene.append(line.strip())
     return id2gene
 
 
-def get_id_2_label(cell_statistics_path, species_data_path, tissue, train_dir: str):
-    if not cell_statistics_path.exists():
-        data_path = species_data_path / train_dir
-        cell_files = data_path.glob(f'*{tissue}*_celltype.csv')
-        cell_types = set()
-        for file in cell_files:
-            df = pd.read_csv(file, dtype=np.str, header=0)
-            df['Cell_type'] = df['Cell_type'].map(str.strip)
-            cell_types = set(df.values[:, 2]) | cell_types
-            # cell_types = set(pd.read_csv(file, dtype=np.str, header=0).values[:, 2]) | cell_types
-        id2label = list(cell_types)
-        with open(cell_statistics_path, 'w', encoding='utf-8') as f:
-            for cell_type in id2label:
-                f.write(cell_type + '\r\n')
-    else:
-        id2label = []
-        with open(cell_statistics_path, 'r', encoding='utf-8') as f:
-            for line in f:
-                id2label.append(line.strip())
+def get_id_2_label(cell_statistics_path):
+    id2label = []
+    with open(cell_statistics_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            id2label.append(line.strip())
     return id2label
-
-
-def calculate_mutual_info(gene_gene_edges: np.array, feat: np.array, gene_gene_graph: dgl.DGLGraph):
-    """
-    :param gene_gene_edges: (edges_num, 2)
-    :param feat: (gene, cell)
-    :param gene_gene_graph:
-    :return:
-    """
-    feat = feat > 0
-    edges_num = gene_gene_edges.shape[0]
-    frequency = np.sum(feat, axis=1)  # get the frequency of every gene
-    pair = feat[gene_gene_edges]  # (edges_num, 2, cell_num)
-    pair_frequency = []  # f(x, y)
-    for i in range(edges_num):
-        pair_frequency.append(np.sum(pair[i, 0] & pair[i, 1]))
-    pair_frequency = np.array(pair_frequency)
-    # f(x, y) / (f(x) * f(y))
-    mutual_info = pair_frequency / (frequency[gene_gene_edges[:, 0]] * frequency[gene_gene_edges[:, 1]] + 1e-6)
-    mutual_info = F.relu(torch.log(torch.from_numpy(mutual_info)))
-    mutual_info = torch.cat([mutual_info, mutual_info]).unsqueeze(-1)  # undirected edge
-    return mutual_info
 
 
 def load_data(params):
     random_seed = params.random_seed
     dense_dim = params.dense_dim
-    train = params.train_dataset
     test = params.test_dataset
     tissue = params.tissue
     device = torch.device('cpu' if params.gpu == -1 else f'cuda:{params.gpu}')
 
-    proj_path = Path(__file__).parent.resolve().parent.resolve().parent.resolve()
+    proj_path = Path(__file__).parent.resolve().parent.resolve()
     species_data_path = proj_path / 'data' / params.species
     if not species_data_path.exists():
         raise NotImplementedError
     statistics_path = species_data_path / 'statistics'
-    gene_gene_inter_path = species_data_path / 'interaction.csv'
 
     map_dict = get_map_dict(species_data_path, tissue)
     if not statistics_path.exists():
@@ -133,11 +78,11 @@ def load_data(params):
     cell_statistics_path = statistics_path / (tissue + '_cell_type.txt')  # train labels
 
     # generate gene statistics file
-    id2gene = get_id_2_gene(gene_statistics_path, species_data_path, tissue, params.train_dir)
+    id2gene = get_id_2_gene(gene_statistics_path)
     # generate cell label statistics file
-    id2label = get_id_2_label(cell_statistics_path, species_data_path, tissue, params.train_dir)
+    id2label = get_id_2_label(cell_statistics_path)
 
-    train_num, test_num = 0, 0
+    test_num = 0
     # prepare unified genes
     gene2id = {gene: idx for idx, gene in enumerate(id2gene)}
     num_genes = len(id2gene)
@@ -152,76 +97,51 @@ def load_data(params):
     test_mask_dict = dict()
     test_nid_dict = dict()
 
-    if params.g2g:
-        # 1. read data, store everything in a graph,
-        gene_gene_edges = []  # gene-gene interaction edges
-        gene_gene_inter = pd.read_csv(gene_gene_inter_path, index_col=0, header=0, dtype=np.str).values
-        for g1, g2 in gene_gene_inter:
-            g1_id = gene2id.get(g1, None)
-            g2_id = gene2id.get(g2, None)
-            if g1_id is not None and g2_id is not None:
-                gene_gene_edges.append([g1_id, g2_id])
-        gene_gene_edges = np.array(gene_gene_edges)
-        gene_gene_num = gene_gene_edges.shape[0]  # number of gene-gene interactions
-        print(f"totally {gene_gene_num} gene-gene edges")
-
-    train_graph = dgl.DGLGraph()
     ids = torch.arange(num_genes, dtype=torch.int32, device=device).unsqueeze(-1)
-    if params.g2g:
-        w1 = torch.tensor([1] * gene_gene_num, dtype=torch.float32, device=device).unsqueeze(-1)
-        w2 = torch.tensor([1] * gene_gene_num, dtype=torch.float32, device=device).unsqueeze(-1)
 
-    '''
-    CALCULATE GENE-GENE WEIGHT
-    1. add gene-gene edges into train graph
-    2. add gene-gene edges into gene-gene graph
-    3. add gene-gene edges into test graph
-    4. calculate weights of gene-gene edges in gene-gene graph
-    5. copy weights of gene-gene edges from gene-gene graph to train&test graph
-    '''
     # ==================================================
     # add all genes as nodes
-    train_graph.add_nodes(num_genes, {'id': ids})
-    if params.g2g:
-        # add gene-gene edges
-        train_graph.add_edges(gene_gene_edges[:, 0], gene_gene_edges[:, 1], {'weight': w1})
-        train_graph.add_edges(gene_gene_edges[:, 1], gene_gene_edges[:, 0], {'weight': w2})
-
-        gene_gene_graph = dgl.DGLGraph()  # a temporary graph used to calculate weight of gene-gene edge
-        gene_gene_graph.add_nodes(num_genes)
-        gene_gene_graph.add_edges(gene_gene_edges[:, 0], gene_gene_edges[:, 1])
-        gene_gene_graph.add_edges(gene_gene_edges[:, 1], gene_gene_edges[:, 0])
 
     for num in test:
         test_graph_dict[num] = dgl.DGLGraph()
         test_graph_dict[num].add_nodes(num_genes, {'id': ids})
-        if params.g2g:
-            test_graph_dict[num].add_edges(gene_gene_edges[:, 0], gene_gene_edges[:, 1], {'weight': w1})
-            test_graph_dict[num].add_edges(gene_gene_edges[:, 1], gene_gene_edges[:, 0], {'weight': w2})
     # ====================================================
 
-    train_labels = []
     matrices = []
-    start = time()
-    for num in train + test:
-        if num in train:
-            data_path = species_data_path / (params.train_dir + f'/{params.species}_{tissue}{num}_data.csv')
-            type_path = species_data_path / (params.train_dir + f'/{params.species}_{tissue}{num}_celltype.csv')
-        else:
-            data_path = species_data_path / (params.test_dir + f'/{params.species}_{tissue}{num}_data.csv')
-            type_path = species_data_path / (params.test_dir + f'/{params.species}_{tissue}{num}_celltype.csv')
+    data_path = species_data_path / 'release'
+    data_files = data_path.glob(f'{params.species}_{tissue}*_data.npz')
+    support_num = 0
+
+    for data_file in data_files:
+        info = load_npz(data_file)
+        row_idx, gene_idx = np.nonzero(info > 0)
+        non_zeros = info.data
+        cell_num = info.shape[0]
+        support_num += cell_num
+        matrices.append(info)
+        ids = torch.tensor([-1] * cell_num, device=device, dtype=torch.int32).unsqueeze(-1)
+
+        for n in test:  # training cell also in test graph
+            cell_idx = row_idx + test_graph_dict[n].number_of_nodes()
+            test_graph_dict[n].add_nodes(cell_num, {'id': ids})
+            test_graph_dict[n].add_edges(cell_idx, gene_idx,
+                                         {'weight': torch.tensor(non_zeros, dtype=torch.float32,
+                                                                 device=device).unsqueeze(1)})
+            test_graph_dict[n].add_edges(gene_idx, cell_idx,
+                                         {'weight': torch.tensor(non_zeros, dtype=torch.float32,
+                                                                 device=device).unsqueeze(1)})
+    total_cell = support_num
+    for num in test:
+        start = time()
+        data_path = species_data_path / (params.test_dir + f'/{params.species}_{tissue}{num}_data.csv')
+        type_path = species_data_path / (params.test_dir + f'/{params.species}_{tissue}{num}_celltype.csv')
 
         # load celltype file then update labels accordingly
         cell2type = pd.read_csv(type_path, index_col=0)
         cell2type.columns = ['cell', 'type']
         cell2type['type'] = cell2type['type'].map(str.strip)
-        if num in train:
-            cell2type['id'] = cell2type['type'].map(label2id)
-            assert not cell2type['id'].isnull().any(), 'something wrong about celltype file.'
-            train_labels += cell2type['id'].tolist()
-        else:
-            # test_labels += cell2type['type'].tolist()
-            test_label_dict[num] = cell2type['type'].tolist()
+        # test_labels += cell2type['type'].tolist()
+        test_label_dict[num] = cell2type['type'].tolist()
 
         # load data file then update graph
         df = pd.read_csv(data_path, index_col=0)  # (gene, cell)
@@ -240,10 +160,7 @@ def load_data(params):
         row_idx, col_idx = np.nonzero(arr > params.threshold)  # intra-dataset index
         non_zeros = arr[(row_idx, col_idx)]  # non-zero values
         # inter-dataset index
-        if num in train:
-            cell_idx = row_idx + train_graph.number_of_nodes()  # cell_index
-        else:
-            cell_idx = row_idx + test_graph_dict[num].number_of_nodes()
+        cell_idx = row_idx + test_graph_dict[num].number_of_nodes()
         gene_idx = df.columns[col_idx].astype(int).tolist()  # gene_index
         info_shape = (len(df), num_genes)
         info = csr_matrix((non_zeros, (row_idx, gene_idx)), shape=info_shape)
@@ -251,50 +168,26 @@ def load_data(params):
 
         # test_nodes_index_dict[num] = list(range(graph.number_of_nodes(), graph.number_of_nodes() + len(df)))
         ids = torch.tensor([-1] * len(df), device=device, dtype=torch.int32).unsqueeze(-1)
-        if num in train:
-            train_num += len(df)
-            train_graph.add_nodes(len(df), {'id': ids})
-            train_graph.add_edges(cell_idx, gene_idx,
-                                  {'weight': torch.tensor(non_zeros, dtype=torch.float32, device=device).unsqueeze(1)})
-            train_graph.add_edges(gene_idx, cell_idx,
-                                  {'weight': torch.tensor(non_zeros, dtype=torch.float32, device=device).unsqueeze(1)})
-            for n in test:  # training cell also in test graph
-                test_graph_dict[n].add_nodes(len(df), {'id': ids})
-                test_graph_dict[n].add_edges(cell_idx, gene_idx,
-                                             {'weight': torch.tensor(non_zeros, dtype=torch.float32,
-                                                                     device=device).unsqueeze(1)})
-                test_graph_dict[n].add_edges(gene_idx, cell_idx,
-                                             {'weight': torch.tensor(non_zeros, dtype=torch.float32,
-                                                                     device=device).unsqueeze(1)})
-        else:
-            test_index_dict[num] = list(range(train_num + test_num, train_num + test_num + len(df)))
-            test_nid_dict[num] = list(
-                range(test_graph_dict[num].number_of_nodes(), test_graph_dict[num].number_of_nodes() + len(df)))
-            test_num += len(df)
-            test_graph_dict[num].add_nodes(len(df), {'id': ids})
-            # for the test cells, only gene-cell edges are in the test graph
-            test_graph_dict[num].add_edges(gene_idx, cell_idx,
-                                           {'weight': torch.tensor(non_zeros, dtype=torch.float32,
-                                                                   device=device).unsqueeze(1)})
+        test_index_dict[num] = list(range(support_num + test_num, support_num + test_num + len(df)))
+        test_nid_dict[num] = list(
+            range(test_graph_dict[num].number_of_nodes(), test_graph_dict[num].number_of_nodes() + len(df)))
+        test_num += len(df)
+        test_graph_dict[num].add_nodes(len(df), {'id': ids})
+        # for the test cells, only gene-cell edges are in the test graph
+        test_graph_dict[num].add_edges(gene_idx, cell_idx,
+                                       {'weight': torch.tensor(non_zeros, dtype=torch.float32,
+                                                               device=device).unsqueeze(1)})
 
         print(f'Added {len(df)} nodes and {len(cell_idx)} edges.')
-        print(f'#Nodes in Train Graph: {train_graph.number_of_nodes()}, #Edges: {train_graph.number_of_edges()}.')
         print(f'Costs {time() - start:.3f} s in total.\n')
+        total_cell += num
 
-    print(f"totally {train_num} nodes in train set, {test_num} nodes in test set.")
-
-    train_index = list(range(num_genes + train_num))  # nodes index in train graph
-    train_labels = list(map(int, train_labels))
-    train_statistic = dict(collections.Counter(train_labels))
-    print('------Train label statistics------')
-    for i, (key, value) in enumerate(train_statistic.items(), start=1):
-        print(f"#{i} [{id2label[key]}]: {value}")
-
+    support_index = list(range(num_genes + support_num))
     # 2. create features
     sparse_feat = vstack(matrices).toarray()  # cell-wise  (cell, gene)
     # transpose to gene-wise
-    gene_pca = PCA(dense_dim, random_state=random_seed).fit(sparse_feat[:train_num].T)
-    gene_feat = gene_pca.transform(sparse_feat[:train_num].T)
+    gene_pca = PCA(dense_dim, random_state=random_seed).fit(sparse_feat[:support_num].T)
+    gene_feat = gene_pca.transform(sparse_feat[:support_num].T)
     gene_evr = sum(gene_pca.explained_variance_ratio_) * 100
     print(f'[PCA] Gene EVR: {gene_evr:.2f} %.')
 
@@ -306,23 +199,8 @@ def load_data(params):
     cell_feat = torch.from_numpy(cell_feat)
 
     features = torch.cat([gene_feat, cell_feat], dim=0).type(torch.float).to(device)
-    train_graph.ndata['features'] = features[train_index]
     for num in test:
-        test_graph_dict[num].ndata['features'] = features[train_index + test_index_dict[num]]
-    # gene, train_cell, test_cell
-    train_labels = torch.tensor([-1] * num_genes + train_labels, dtype=torch.long,
-                                device=device)  # [gene_num+train_num]
-    num_cells = test_num + train_num
-
-    train_nid = torch.arange(start=num_genes, end=train_num + num_genes, dtype=torch.int64)
-
-    # normalize weight
-    normalize_weight(train_graph)
-    # add self-loop
-    train_graph.add_edges(train_graph.nodes(), train_graph.nodes(),
-                          {'weight': torch.ones(train_graph.number_of_nodes(), dtype=torch.float,
-                                                device=device).unsqueeze(1)})
-    train_graph.readonly()
+        test_graph_dict[num].ndata['features'] = features[support_index + test_index_dict[num]]
 
     for num in test:
         test_mask_dict[num] = torch.zeros(test_graph_dict[num].number_of_nodes(), dtype=torch.bool, device=device)
@@ -335,21 +213,6 @@ def load_data(params):
                 1)})
         test_graph_dict[num].readonly()
 
-    if params.g2g:
-        '''
-        CALCULATE GENE-GENE WEIGHT
-        '''
-        # normalize weight of gene-gene edges
-        gene_gene_graph.edata['weight'] = calculate_mutual_info(gene_gene_edges, sparse_feat[:train_num].T,
-                                                                gene_gene_graph)
-        normalize_weight(gene_gene_graph)
-        # copy weight of gene-gene edges from gene-graph to train_graph and test_graph
-        assert gene_gene_num * 2 == gene_gene_graph.edata['weight'].shape[0]
-        # NOTE: the first gene_gene_num*2 edges in graph are gene-gene interaction edges
-        train_graph.edata['weight'][:gene_gene_num * 2] = gene_gene_graph.edata['weight'].to(device)
-        for num in test:
-            test_graph_dict[num].edata['weight'][:gene_gene_num * 2] = gene_gene_graph.edata['weight'].to(device)
-
     test_dict = {
         'graph': test_graph_dict,
         'label': test_label_dict,
@@ -357,45 +220,4 @@ def load_data(params):
         'mask': test_mask_dict
     }
 
-    return num_cells, num_genes, num_labels, train_graph, train_labels, train_nid, map_dict, np.array(
-        id2label, dtype=np.str), test_dict
-
-
-if __name__ == '__main__':
-    """
-    python ./code/utils/preprocess.py --train_dataset 3285 753 --test_dataset 10100 19431 2502 2545 2695 3005 4397 --tissue Brain
-    python ./code/utils/preprocess.py --train_dataset 4682 --test_dataset 203 2294 7701 8336 --tissue Kidney
-    python ./code/utils/preprocess.py --train_dataset 2512 3014 1414 --test_dataset 1920 6340 707 769 --tissue Lung
-    python ./code/utils/preprocess.py --train_dataset 4682 --test_dataset 203 --tissue Kidney
-    """
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--random_seed", type=int, default=10086)
-    parser.add_argument("--dropout", type=float, default=0.0,
-                        help="dropout probability")
-    parser.add_argument("--gpu", type=int, default=0,
-                        help="GPU id, -1 for cpu")
-    parser.add_argument("--lr", type=float, default=1e-3,
-                        help="learning rate")
-    parser.add_argument("--weight_decay", type=float, default=5e-4,
-                        help="Weight for L2 loss")
-    parser.add_argument("--n_epochs", type=int, default=500,
-                        help="number of training epochs")
-    parser.add_argument("--dense_dim", type=int, default=400,
-                        help="number of hidden gcn units")
-    parser.add_argument("--hidden_dim", type=int, default=200,
-                        help="number of hidden gcn units")
-    parser.add_argument("--n_layers", type=int, default=1,
-                        help="number of hidden gcn layers")
-    parser.add_argument("--threshold", type=float, default=0)
-    parser.add_argument("--train_dataset", nargs="+", required=True, type=int,
-                        help="list of dataset id")
-    parser.add_argument("--test_dataset", nargs="+", required=True, type=int,
-                        help="list of dataset id")
-    parser.add_argument("--data_dir", type=str, default='mouse_data')
-    parser.add_argument("--train_dir", type=str, default='mouse_train_data')
-    parser.add_argument("--test_dir", type=str, default='mouse_test_data')
-    parser.add_argument("--tissue", required=True, type=str)
-
-    params = parser.parse_args()
-
-    load_data(params)
+    return total_cell, num_genes, num_labels, map_dict, np.array(id2label, dtype=np.str), test_dict
