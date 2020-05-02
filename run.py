@@ -14,7 +14,7 @@ from models import GNN
 from pprint import pprint
 
 
-class Trainer:
+class Runner:
     def __init__(self, params):
         self.params = params
         self.postfix = time.strftime('%d_%m_%Y') + '_' + time.strftime('%H:%M:%S')
@@ -58,8 +58,9 @@ class Trainer:
         self.save_pred(record)
 
     def load_model(self):
-        model_path = self.prj_path / 'checkpoint' / self.params.model_name
-        state = torch.load(model_path)
+        # model_path = self.prj_path / 'checkpoint' / self.params.model_name
+        model_path = self.prj_path / 'pretrained' / self.params.species / 'models' / self.params.model_name
+        state = torch.load(model_path, map_location=self.device)
         self.model.load_state_dict(state['model'])
         # self.optimizer.load_state_dict(state['optimizer'])
 
@@ -104,49 +105,37 @@ class Trainer:
 
 if __name__ == '__main__':
     """
-    python ./code/run.py --tissue Blood --train_dataset 283 2466 3201 135 352 658 --test_dataset 768 1109 1223 1610
-    python ./code/run.py --tissue Bone_marrow --train_dataset 510 5298 13019 8166 --test_dataset 47 467
-    python ./code/run.py --tissue Brain --train_dataset 3285 753 --test_dataset 19431 2695 2502 2545 3005 4397
-    python ./code/run.py --tissue Fetal_brain --train_dataset 4369 --test_dataset 369
-    python ./code/run.py --tissue Intestine --train_dataset 3438 1671 1575 --test_dataset 28 192 260 3260 1449 529
-    python ./code/run.py --tissue Kidney --train_dataset 4682 --test_dataset 203 7926 1435
-    python ./code/run.py --tissue Liver --train_dataset 4424 261 --test_dataset 3729 4122 7761 18000
-    python ./code/run.py --tissue Lung --train_dataset 2512 1414 3014 --test_dataset 769 707 1920 6340
-    python ./code/run.py --tissue Mammary_gland --train_dataset 3510 1311 6633 6905 4909 2081 1059 648 1592 --test_dataset 133
-    python ./code/run.py --tissue Pancreas --train_dataset 3610 --test_dataset 1354 108 131 207
-    python ./code/run.py --tissue Spleen --train_dataset 1970 --test_dataset 1759 1433 1081
-    python ./code/run.py --tissue Testis --train_dataset 2216 11789 --test_dataset 2584 4239 8792 9923 6598 300 4233 1662 299 199 398 296 --batch_size 200
      
-    python run.py --model_name mouse-Pancreas-9-30_04_2020_18:07:36.pt --test_dataset 1354 108 131 207 --tissue Pancreas
-
-    python ./code/run.py --species human --tissue Blood --train_dataset 2719 5296 2156 7160 --test_dataset 9649 3223 2469 --gpu "${gpu_id}" --log_file "${log_file}"
-    python ./code/run.py --species human --tissue Brain --train_dataset 7324 --test_dataset 251 2892 1834 --gpu "${gpu_id}" --log_file "${log_file}"
-    python ./code/run.py --species human --tissue Colorectum --train_dataset 4681 3367 5549 5718 3281 5765 11229 --test_dataset 94 11894 --gpu "${gpu_id}" --log_file "${log_file}"
-    python ./code/run.py --species human --tissue Esophagus --train_dataset 2696 8668 --test_dataset 16999 --gpu "${gpu_id}" --log_file "${log_file}"
-    python ./code/run.py --species human --tissue Esophagus --train_dataset 2696 8668 --test_dataset 17001 --gpu "${gpu_id}" --log_file "${log_file}"
-    python ./code/run.py --species human --tissue Esophagus --train_dataset 2696 8668 --test_dataset 16469 --gpu "${gpu_id}" --log_file "${log_file}"
-    python ./code/run.py --species human --tissue Fetal_kidney --train_dataset 4734 9932 3057 --test_dataset 540 --gpu "${gpu_id}" --log_file "${log_file}"
-    python ./code/run.py --species human --tissue Kidney --train_dataset 9153 9966 3849 --test_dataset 5675 --gpu "${gpu_id}" --log_file "${log_file}"
-    python ./code/run.py --species human --tissue Liver --train_dataset 1811 4377 4384 --test_dataset 3502 298 5105 --gpu "${gpu_id}" --log_file "${log_file}"
-    python ./code/run.py --species human --tissue Lung --train_dataset 6022 9603 --test_dataset 2064 6338 7211 10743 --gpu "${gpu_id}" --log_file "${log_file}"
-    python ./code/run.py --species human --tissue Lung --train_dataset 6022 9603 --test_dataset 11204 4624 2841 9566 --gpu "${gpu_id}" --log_file "${log_file}"
-    python ./code/run.py --species human --tissue Pancreas --train_dataset 9727 --test_dataset 465 958 20 185 15 11 --gpu "${gpu_id}" --log_file "${log_file}"
-    python ./code/run.py --species human --tissue Placenta --train_dataset 9595 --test_dataset 615 --gpu "${gpu_id}" --log_file "${log_file}"
-    python ./code/run.py --species human --tissue Spleen --train_dataset 15806 --test_dataset 11081 9887 --gpu "${gpu_id}" --log_file "${log_file}"
-    python ./code/run.py --species human --tissue Spleen --train_dataset 15806 --test_dataset 18513 --gpu "${gpu_id}" --log_file "${log_file}"
-    python ./code/run.py --species human --tissue Spleen --train_dataset 15806 --test_dataset 16286 --gpu "${gpu_id}" --log_file "${log_file}"
-    python ./code/run.py --species human --tissue Spleen --train_dataset 15806 --test_dataset 14848 --gpu "${gpu_id}" --log_file "${log_file}"
+    python run.py --model_name human-Blood-163-30_04_2020_22_58_36.pt --test_dataset 9649 3223 2469 --tissue Blood
+    python run.py --model_name human-Brain-12-30_04_2020_23_17_55.pt --test_dataset 251 2892 1834 --tissue Brain
+    python run.py --model_name human-Colorectum-18-01_05_2020_00_44_09.pt --test_dataset 94 11894 --tissue Colorectum
+    python run.py --model_name human-Lung-146-01_05_2020_05_33_15.pt --test_dataset 2064 6338 7211 10743 11204 4624 2841 9566 --tissue Lung
+    python run.py --model_name human-Pancreas-279-01_05_2020_05_53_29.pt --test_dataset 465 958 20 185 15 11 --tissue Pancreas
+    python run.py --model_name human-Spleen-289-01_05_2020_08_22_02.pt --test_dataset 11081 9887 18513 16286 14848 --tissue Spleen
+    
+    python run.py --model_name mouse-Blood-56-30_04_2020_22_24_33.pt --test_dataset 768 1109 1223 1610 --tissue Blood --log_file "${log_file}"
+    python run.py --model_name mouse-Bone_marrow-274-30_04_2020_23_54_44.pt --test_dataset 47 467 --tissue Bone_marrow --log_file "${log_file}"
+    python run.py --model_name mouse-Brain-82-01_05_2020_00_35_39.pt --test_dataset 19431 2695 2502 2545 3005 4397 --tissue Brain --log_file "${log_file}"
+    python run.py --model_name mouse-Fetal_brain-179-01_05_2020_00_48_08.pt --test_dataset 369 --tissue Fetal_brain --log_file "${log_file}"
+    python run.py --model_name mouse-Intestine-60-01_05_2020_01_07_25.pt --test_dataset 28 192 260 3260 1449 529 --tissue Intestine --log_file "${log_file}"
+    python run.py --model_name mouse-Kidney-53-01_05_2020_01_24_23.pt --test_dataset 203 7926 1435 --tissue Kidney --log_file "${log_file}"
+    python run.py --model_name mouse-Liver-39-01_05_2020_01_51_02.pt --test_dataset 3729 4122 7761 18000 --tissue Liver --log_file "${log_file}"
+    python run.py --model_name mouse-Lung-28-01_05_2020_02_33_16.pt --test_dataset 769 707 1920 6340 --tissue Lung --log_file "${log_file}"
+    python run.py --model_name mouse-Mammary_gland-35-01_05_2020_02_52_22.pt --test_dataset 133 --tissue Mammary_gland --log_file "${log_file}"
+    python run.py --model_name mouse-Pancreas-62-01_05_2020_03_29_05.pt --test_dataset 1354 108 131 207 --tissue Pancreas --log_file "${log_file}"
+    python run.py --model_name mouse-Spleen-73-01_05_2020_03_35_50.pt --test_dataset 1759 1433 1081 --tissue Spleen --log_file "${log_file}"
+    python run.py --model_name mouse-Testis-45-01_05_2020_12_33_53.pt --test_dataset 2584 4239 8792 9923 6598 300 4233 1662 299 199 398 296 --tissue Testis --log_file "${log_file}"
     """
     parser = argparse.ArgumentParser()
     parser.add_argument("--random_seed", type=int, default=10086)
-    parser.add_argument("--dropout", type=float, default=0.1,
-                        help="dropout probability")
-    parser.add_argument("--gpu", type=int, default=0,
+    # parser.add_argument("--dropout", type=float, default=0.1,
+    #                     help="dropout probability")
+    parser.add_argument("--gpu", type=int, default=-1,
                         help="GPU id, -1 for cpu")
-    parser.add_argument("--dense_dim", type=int, default=400,
-                        help="number of hidden gcn units")
-    parser.add_argument("--hidden_dim", type=int, default=200,
-                        help="number of hidden gcn units")
+    # parser.add_argument("--dense_dim", type=int, default=400,
+    #                     help="number of hidden gcn units")
+    # parser.add_argument("--hidden_dim", type=int, default=200,
+    #                     help="number of hidden gcn units")
     parser.add_argument("--threshold", type=float, default=0)
     parser.add_argument("--test_dataset", nargs="+", required=True, type=int,
                         help="list of dataset id")
@@ -159,6 +148,9 @@ if __name__ == '__main__':
     parser.add_argument("--save_dir", type=str, default='result')
     parser.add_argument("--model_name", type=str, required=True)
     params = parser.parse_args()
+    params.dropout = 0.1
+    params.dense_dim = 400
+    params.hidden_dim = 200
     pprint(vars(params))
 
     random.seed(params.random_seed)
@@ -166,5 +158,5 @@ if __name__ == '__main__':
     torch.manual_seed(params.random_seed)
     torch.cuda.manual_seed(params.random_seed)
 
-    trainer = Trainer(params)
+    trainer = Runner(params)
     trainer.run()

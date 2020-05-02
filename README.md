@@ -9,22 +9,28 @@ Recent advance in single-cell RNA sequencing (scRNA-seq) has enabled large-scale
 - Dependencies can be installed using `pip install -r requirements.txt`
 
 1. Execute `fdfjsdklf` for unpacking the pre-trained models.
-2.
-3. After unpacking, your tree should look like this:
+2. Execute `bash setup.sh` to prepare dictionary for test data.
+3. After executing the above commands, your tree should look like this:
 ```
  |- pretrianed
      |- human
         |- graphs
         |- statistics
-        |- map.xlsx
         |- models
      |- mouse
         |- graphs
         |- statistics
-        |- map.xlsx
         |- models
+ |- test
+     |- human
+     |- mouse
  |- models
+    |- __init__.py
+    |- gnn.py
  |- utils
+    |- __init__.py
+    |- helper.py
+    |- preprocess.py
  |- run.py
  |- requirements.txt
  |- README.md
@@ -36,18 +42,7 @@ Recent advance in single-cell RNA sequencing (scRNA-seq) has enabled large-scale
 
 1. The file name of test data should be named in this format: **species_TissueNumber_data.csv**. For example, `human_Spleen9887_data.csv` is a data file contains 9887 human spleen cells.
 2. ***How to describe the format of data??***
-3. All the test data should be included in a species specific dictionary under the `pretrianed` dictionary . If you name the dictionary of human data `test`, and then your file tree should look like this:
-```
- |- pretrianed
-     |- human
-        |- graphs
-        |- statistics
-        |- map.xlsx
-        |- models
-        |- test
-            |- ....
- ....
-```
+3. All the test data should be included under the `test` dictionary. Furthermore, all of the human testing datasets and mouse testing datasets are required to be under `./test/human` and `./test/mouse` respectively.
 
 ### Run
 ```shell script

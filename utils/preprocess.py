@@ -65,11 +65,8 @@ def load_data(params):
     device = torch.device('cpu' if params.gpu == -1 else f'cuda:{params.gpu}')
 
     proj_path = Path(__file__).parent.resolve().parent.resolve()
-    species_data_path = proj_path / 'data' / params.species
-    if not species_data_path.exists():
-        raise NotImplementedError
+    species_data_path = proj_path / 'pretrained' / params.species
     statistics_path = species_data_path / 'statistics'
-
     map_dict = get_map_dict(species_data_path, tissue)
     if not statistics_path.exists():
         statistics_path.mkdir()
@@ -108,34 +105,57 @@ def load_data(params):
     # ====================================================
 
     matrices = []
-    data_path = species_data_path / 'release'
-    data_files = data_path.glob(f'{params.species}_{tissue}*_data.npz')
+    # data_path = proj_path / 'pretrained' / f'{params.species}' / 'graphs'
+    # data_files = data_path.glob(f'{params.species}_{tissue}*_data.npz')
+    # support_num = 0
+    #
+    # for data_file in data_files:
+    #     info = load_npz(data_file)
+    #     print(f"load {data_file.name}")
+    #     row_idx, gene_idx = np.nonzero(info > 0)
+    #     non_zeros = info.data
+    #     cell_num = info.shape[0]
+    #     support_num += cell_num
+    #     matrices.append(info)
+    #     ids = torch.tensor([-1] * cell_num, device=device, dtype=torch.int32).unsqueeze(-1)
+    #
+    #     for n in test:  # training cell also in test graph
+    #         cell_idx = row_idx + test_graph_dict[n].number_of_nodes()
+    #         test_graph_dict[n].add_nodes(cell_num, {'id': ids})
+    #         test_graph_dict[n].add_edges(cell_idx, gene_idx,
+    #                                      {'weight': torch.tensor(non_zeros, dtype=torch.float32,
+    #                                                              device=device).unsqueeze(1)})
+    #         test_graph_dict[n].add_edges(gene_idx, cell_idx,
+    #                                      {'weight': torch.tensor(non_zeros, dtype=torch.float32,
+    #                                                              device=device).unsqueeze(1)})
+    # total_cell = support_num
+
+    support_data = proj_path / 'pretrained' / f'{params.species}' / 'raw_graphs' / f'{params.species}_{tissue}_data.npz'
     support_num = 0
-
-    for data_file in data_files:
-        info = load_npz(data_file)
-        row_idx, gene_idx = np.nonzero(info > 0)
-        non_zeros = info.data
-        cell_num = info.shape[0]
-        support_num += cell_num
-        matrices.append(info)
-        ids = torch.tensor([-1] * cell_num, device=device, dtype=torch.int32).unsqueeze(-1)
-
-        for n in test:  # training cell also in test graph
-            cell_idx = row_idx + test_graph_dict[n].number_of_nodes()
-            test_graph_dict[n].add_nodes(cell_num, {'id': ids})
-            test_graph_dict[n].add_edges(cell_idx, gene_idx,
-                                         {'weight': torch.tensor(non_zeros, dtype=torch.float32,
-                                                                 device=device).unsqueeze(1)})
-            test_graph_dict[n].add_edges(gene_idx, cell_idx,
-                                         {'weight': torch.tensor(non_zeros, dtype=torch.float32,
-                                                                 device=device).unsqueeze(1)})
+    info = load_npz(support_data)
+    print(f"load {support_data.name}")
+    row_idx, gene_idx = np.nonzero(info > 0)
+    non_zeros = info.data
+    cell_num = info.shape[0]
+    support_num += cell_num
+    matrices.append(info)
+    ids = torch.tensor([-1] * cell_num, device=device, dtype=torch.int32).unsqueeze(-1)
     total_cell = support_num
+
+    for n in test:  # training cell also in test graph
+        cell_idx = row_idx + test_graph_dict[n].number_of_nodes()
+        test_graph_dict[n].add_nodes(cell_num, {'id': ids})
+        test_graph_dict[n].add_edges(cell_idx, gene_idx,
+                                     {'weight': torch.tensor(non_zeros, dtype=torch.float32,
+                                                             device=device).unsqueeze(1)})
+        test_graph_dict[n].add_edges(gene_idx, cell_idx,
+                                     {'weight': torch.tensor(non_zeros, dtype=torch.float32,
+                                                             device=device).unsqueeze(1)})
+
     for num in test:
         start = time()
-        data_path = species_data_path / (params.test_dir + f'/{params.species}_{tissue}{num}_data.csv')
-        type_path = species_data_path / (params.test_dir + f'/{params.species}_{tissue}{num}_celltype.csv')
-
+        data_path = proj_path / params.test_dir / params.species / f'{params.species}_{tissue}{num}_data.csv'
+        type_path = proj_path / params.test_dir / params.species / f'{params.species}_{tissue}{num}_celltype.csv'
         # load celltype file then update labels accordingly
         cell2type = pd.read_csv(type_path, index_col=0)
         cell2type.columns = ['cell', 'type']
@@ -153,7 +173,8 @@ def load_data(params):
         col = [c for c in df.columns if c in gene2id.values()]
         df = df[col]
 
-        print(f'Nonzero Ratio: {df.fillna(0).astype(bool).sum().sum() / df.size * 100:.2f}%')
+        print(
+            f'{params.species}_{tissue}{num}_data.csv -> Nonzero Ratio: {df.fillna(0).astype(bool).sum().sum() / df.size * 100:.2f}%')
 
         # maintain inter-datasets index for graph and RNA-seq values
         arr = df.to_numpy()
@@ -179,7 +200,7 @@ def load_data(params):
                                                                device=device).unsqueeze(1)})
 
         print(f'Added {len(df)} nodes and {len(cell_idx)} edges.')
-        print(f'Costs {time() - start:.3f} s in total.\n')
+        print(f'Costs {time() - start:.3f}s in total.')
         total_cell += num
 
     support_index = list(range(num_genes + support_num))
