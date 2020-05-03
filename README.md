@@ -8,7 +8,7 @@ Recent advance in single-cell RNA sequencing (scRNA-seq) has enabled large-scale
 - Compatible with Python 3.7 and Pytorch 1.4
 - Dependencies can be installed using `pip install -r requirements.txt`
 
-1. Execute `7z x pretrained.7z` for unpacking the pre-trained models.
+1. Execute `tar -xzvf pretrained.tar.gz` for unpacking the pre-trained models.
 2. Execute `bash setup.sh` to prepare directory for test data.
 3. After executing the above commands, your tree should look like this:
 ```
@@ -48,14 +48,12 @@ Recent advance in single-cell RNA sequencing (scRNA-seq) has enabled large-scale
 
 To test one data file `human_Lung2064.csv`, you should execute the following command:
 ```shell script
-python run.py --species human --tissue Lung --test_dataset 2064 --gpu 0 --log_dir logs --log_file log --save_dir result --threshold 0
+python run.py --species human --tissue Lung --test_dataset 2064 --gpu 0 --save_dir result --threshold 0
 ```
 - ``--species`` The species of cells, `human` or `mouse`.
 - ``--tissue`` The tissue of cells.
 - ``--test_dataset`` The dataset to be tested, in other words, as the file naming rule states, it is exactly the number of cells in the data file.
 - ``--gpu`` Specify the GPU to use, `-1` for cpu.
-- ``--log_dir`` directory of log files.
-- ``--log_file`` Name of log file.
 - ``--save_dir`` directory in which the annotation result outputs.
 - ``--threshold`` The threshold that constitutes the edge in the graph, default is 0.
 

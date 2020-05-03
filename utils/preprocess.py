@@ -12,23 +12,6 @@ from pathlib import Path
 import numpy as np
 
 
-def get_map_dict(species_data_path: Path, tissue):
-    map_df = pd.read_excel(species_data_path / 'map.xlsx')
-    # {num: {test_cell1: {train_cell1, train_cell2}, {test_cell2:....}}, num_2:{}...}
-    map_dic = dict()
-    for idx, row in enumerate(map_df.itertuples()):
-        if getattr(row, 'Tissue') == tissue:
-            num = getattr(row, 'num')
-            test_celltype = getattr(row, 'Celltype')
-            train_celltype = getattr(row, '_5')
-            if map_dic.get(getattr(row, 'num')) is None:
-                map_dic[num] = dict()
-                map_dic[num][test_celltype] = set()
-            elif map_dic[num].get(test_celltype) is None:
-                map_dic[num][test_celltype] = set()
-            map_dic[num][test_celltype].add(train_celltype)
-    return map_dic
-
 
 def normalize_weight(graph: dgl.DGLGraph):
     # normalize weight & add self-loop
@@ -67,7 +50,7 @@ def load_data(params):
     proj_path = Path(__file__).parent.resolve().parent.resolve()
     species_data_path = proj_path / 'pretrained' / params.species
     statistics_path = species_data_path / 'statistics'
-    map_dict = get_map_dict(species_data_path, tissue)
+
     if not statistics_path.exists():
         statistics_path.mkdir()
 
@@ -89,7 +72,6 @@ def load_data(params):
     print(f"totally {num_genes} genes, {num_labels} labels.")
 
     test_graph_dict = dict()  # test-graph dict
-    test_label_dict = dict()  # test label dict
     test_index_dict = dict()  # test feature indices in all features
     test_mask_dict = dict()
     test_nid_dict = dict()
@@ -105,32 +87,8 @@ def load_data(params):
     # ====================================================
 
     matrices = []
-    # data_path = proj_path / 'pretrained' / f'{params.species}' / 'graphs'
-    # data_files = data_path.glob(f'{params.species}_{tissue}*_data.npz')
-    # support_num = 0
-    #
-    # for data_file in data_files:
-    #     info = load_npz(data_file)
-    #     print(f"load {data_file.name}")
-    #     row_idx, gene_idx = np.nonzero(info > 0)
-    #     non_zeros = info.data
-    #     cell_num = info.shape[0]
-    #     support_num += cell_num
-    #     matrices.append(info)
-    #     ids = torch.tensor([-1] * cell_num, device=device, dtype=torch.int32).unsqueeze(-1)
-    #
-    #     for n in test:  # training cell also in test graph
-    #         cell_idx = row_idx + test_graph_dict[n].number_of_nodes()
-    #         test_graph_dict[n].add_nodes(cell_num, {'id': ids})
-    #         test_graph_dict[n].add_edges(cell_idx, gene_idx,
-    #                                      {'weight': torch.tensor(non_zeros, dtype=torch.float32,
-    #                                                              device=device).unsqueeze(1)})
-    #         test_graph_dict[n].add_edges(gene_idx, cell_idx,
-    #                                      {'weight': torch.tensor(non_zeros, dtype=torch.float32,
-    #                                                              device=device).unsqueeze(1)})
-    # total_cell = support_num
 
-    support_data = proj_path / 'pretrained' / f'{params.species}' / 'raw_graphs' / f'{params.species}_{tissue}_data.npz'
+    support_data = proj_path / 'pretrained' / f'{params.species}' / 'graphs' / f'{params.species}_{tissue}_data.npz'
     support_num = 0
     info = load_npz(support_data)
     print(f"load {support_data.name}")
@@ -155,19 +113,12 @@ def load_data(params):
     for num in test:
         start = time()
         data_path = proj_path / params.test_dir / params.species / f'{params.species}_{tissue}{num}_data.csv'
-        type_path = proj_path / params.test_dir / params.species / f'{params.species}_{tissue}{num}_celltype.csv'
-        # load celltype file then update labels accordingly
-        cell2type = pd.read_csv(type_path, index_col=0)
-        cell2type.columns = ['cell', 'type']
-        cell2type['type'] = cell2type['type'].map(str.strip)
-        # test_labels += cell2type['type'].tolist()
-        test_label_dict[num] = cell2type['type'].tolist()
+
 
         # load data file then update graph
         df = pd.read_csv(data_path, index_col=0)  # (gene, cell)
         df = df.transpose(copy=True)  # (cell, gene)
 
-        assert cell2type['cell'].tolist() == df.index.tolist()
         df = df.rename(columns=gene2id)
         # filter out useless columns if exists (when using gene intersection)
         col = [c for c in df.columns if c in gene2id.values()]
@@ -236,9 +187,8 @@ def load_data(params):
 
     test_dict = {
         'graph': test_graph_dict,
-        'label': test_label_dict,
         'nid': test_nid_dict,
         'mask': test_mask_dict
     }
 
-    return total_cell, num_genes, num_labels, map_dict, np.array(id2label, dtype=np.str), test_dict
+    return total_cell, num_genes, num_labels, np.array(id2label, dtype=np.str), test_dict
