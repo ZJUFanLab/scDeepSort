@@ -29,7 +29,6 @@ Recent advance in single-cell RNA sequencing (scRNA-seq) has enabled large-scale
     |- gnn.py
  |- utils
     |- __init__.py
-    |- helper.py
     |- preprocess.py
  |- run.py
  |- requirements.txt
