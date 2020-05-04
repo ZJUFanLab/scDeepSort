@@ -8,7 +8,7 @@ Recent advance in single-cell RNA sequencing (scRNA-seq) has enabled large-scale
 - Compatible with Python 3.7 and Pytorch 1.4
 - Dependencies can be installed using `pip install -r requirements.txt`
 
-1. Execute `tar -xzvf pretrained.tar.gz` for unpacking the pre-trained models.
+1. Download pretrained model `pretrained.tar.gz` from the release page and execute `tar -xzvf pretrained.tar.gz` for it.
 2. Execute `bash setup.sh` to prepare directory for test data.
 3. After executing the above commands, your tree should look like this:
 ```
