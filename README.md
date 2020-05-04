@@ -57,16 +57,15 @@ Recent advance in single-cell RNA sequencing (scRNA-seq) has enabled large-scale
 
 To test one data file `human_Lung2064.csv`, you should execute the following command:
 ```shell script
-python run.py --species human --tissue Lung --test_dataset 2064 --gpu 0 --save_dir result --threshold 0
+python run.py --species human --tissue Lung --test_dataset 2064 --gpu -1 --threshold 0
 ```
 - ``--species`` The species of cells, `human` or `mouse`.
 - ``--tissue`` The tissue of cells.
 - ``--test_dataset`` The dataset to be tested, in other words, as the file naming rule states, it is exactly the number of cells in the data file.
 - ``--gpu`` Specify the GPU to use, `-1` for cpu.
-- ``--save_dir`` directory in which the annotation result outputs.
 - ``--threshold`` The threshold that constitutes the edge in the graph, default is 0.
 
 ### Output
-For each test dataset, it will output a `.csv` file named as `species_Tissue_Number.csv` under the `--save_dir` directory. For example, output of test dataset `human_Spleen9887_data.csv` is `human_Spleen_9887.csv`
+For each test dataset, it will output a `.csv` file named as `species_Tissue_Number.csv` under the `result` directory. For example, output of test dataset `human_Spleen9887_data.csv` is `human_Spleen_9887.csv`
 
 Each line of the output file corresponds to the predictive cell type.

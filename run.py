@@ -80,12 +80,10 @@ class Runner:
         df.to_csv(
             save_path / (self.params.species + f"_{self.params.tissue}_{num}.csv"),
             index=False)
+        print(f"output has been stored in {self.params.species}_{self.params.tissue}_{num}.csv")
 
 
 if __name__ == '__main__':
-    """
-    python run.py --species mouse --tissue Bone_marrow --test_dataset 47 --save_dir out
-    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--gpu", type=int, default=-1,
                         help="GPU id, -1 for cpu")
@@ -95,13 +93,14 @@ if __name__ == '__main__':
     parser.add_argument("--species", default='mouse', type=str)
     parser.add_argument("--tissue", required=True, type=str)
     parser.add_argument("--batch_size", type=int, default=500)
-    parser.add_argument("--save_dir", type=str, default='result')
+    # parser.add_argument("--save_dir", type=str, default='result')
     params = parser.parse_args()
     params.dropout = 0.1
     params.dense_dim = 400
     params.hidden_dim = 200
     params.test_dir = 'test'
     params.random_seed = 10086
+    params.save_dir = 'result'
     pprint(vars(params))
 
     random.seed(params.random_seed)
