@@ -40,7 +40,17 @@ Recent advance in single-cell RNA sequencing (scRNA-seq) has enabled large-scale
 ### Prepare test data
 
 1. The file name of test data should be named in this format: **species_TissueNumber_data.csv**. For example, `human_Spleen9887_data.csv` is a data file containing 9887 human spleen cells.
-2. ***How to describe the format of data??***
+2. The test single-cell transcriptomics csv data file should be normalized with the defalut `LogNormalize` method, wherein the column represents each cell and the row represent each gene, as shown below.
+
+|          |Cell 1|Cell 2|Cell 3|...  |
+| :---:    |:---: | :---:| :---:|:---:|
+|__Gene 1__|    0 | 2.4  |  5.0 |...  |
+|__Gene 2__| 0.8  | 1.1  |  4.3 |...  |
+|__Gene 3__|1.8   |    0 |  0   |...  |
+|  ...     |  ... |  ... | ...  |...  |
+
+
+
 3. All the test data should be included under the `test` directory. Furthermore, all of the human testing datasets and mouse testing datasets are required to be under `./test/human` and `./test/mouse` respectively.
 
 ### Run
