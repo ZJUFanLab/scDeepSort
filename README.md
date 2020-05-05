@@ -9,8 +9,7 @@ Recent advance in single-cell RNA sequencing (scRNA-seq) has enabled large-scale
 - Dependencies can be installed using `pip install -r requirements.txt`
 
 1. Download pretrained model `pretrained.tar.gz` from the release page and execute `tar -xzvf pretrained.tar.gz` for it.
-2. Execute `bash setup.sh` to prepare directory for test data.
-3. After executing the above commands, your tree should look like this:
+2. After executing the above commands, your tree should look like this:
 ```
  |- pretrianed
      |- human
@@ -39,7 +38,7 @@ Recent advance in single-cell RNA sequencing (scRNA-seq) has enabled large-scale
 
 ### Prepare test data
 
-1. The file name of test data should be named in this format: **species_TissueNumber_data.csv**. For example, `human_Spleen9887_data.csv` is a data file containing 9887 human spleen cells.
+1. The file name of test data should be named in this format: **species_TissueNumber_data.csv**. For example, `human_Pancreas11_data.csv` is a data file containing 11 human pancreas cells.
 2. The test single-cell transcriptomics csv data file should be normalized with the defalut `LogNormalize` method with `Seurat` (R package), wherein the column represents each cell and the row represent each gene, as shown below.
 
       |          |Cell 1|Cell 2|Cell 3|...  |
@@ -55,9 +54,9 @@ Recent advance in single-cell RNA sequencing (scRNA-seq) has enabled large-scale
 
 ### Run
 
-To test one data file `human_Lung2064.csv`, you should execute the following command:
+To test one data file `human_Pancreas11.csv`, you should execute the following command:
 ```shell script
-python run.py --species human --tissue Lung --test_dataset 2064 --gpu -1 --threshold 0
+python run.py --species human --tissue Pancreas --test_dataset 11 --gpu -1 --threshold 0
 ```
 - ``--species`` The species of cells, `human` or `mouse`.
 - ``--tissue`` The tissue of cells.
@@ -66,6 +65,15 @@ python run.py --species human --tissue Lung --test_dataset 2064 --gpu -1 --thres
 - ``--threshold`` The threshold that constitutes the edge in the graph, default is 0.
 
 ### Output
-For each test dataset, it will output a `.csv` file named as `species_Tissue_Number.csv` under the `result` directory. For example, output of test dataset `human_Spleen9887_data.csv` is `human_Spleen_9887.csv`
+For each test dataset, it will output a `.csv` file named as `species_Tissue_Number.csv` under the `result` directory. For example, output of test dataset `human_Pancreas11_data.csv` is `human_Pancreas_11.csv`
 
 Each line of the output file corresponds to the predictive cell type.
+
+## Examples
+```
+python run.py --species human --tissue Pancreas --test_dataset 11 --gpu -1 --threshold 0
+```
+
+```
+python run.py --species mouse --tissue Intestine --test_dataset 28 --gpu -1 --threshold 0
+```
