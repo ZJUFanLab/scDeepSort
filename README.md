@@ -7,14 +7,6 @@ Recent advance in single-cell RNA sequencing (scRNA-seq) has enabled large-scale
 
 To addresses this challenge, we developed a reference-free cell-type annotation method, namely DeepSort, using a state-of-the-art deep learning algorithm, i.e. a modified graph neural network (GNN) model. It’s the first time that GNN is introduced into scRNA-seq studies and demonstrate its ground-breaking performances in this application scenario. In brief, DeepSort was constructed based on our weighted GNN framework and was then learned in two embedded high-quality scRNA-seq atlases containing 764,741 cells across 88 tissues of human and mouse, which are the most comprehensive multiple-organs scRNA-seq data resources to date.
 
-
-# Dependency
-
-<img src='https://img.shields.io/badge/scipy-1.3.1-yellowgreen'> <img src='https://img.shields.io/badge/torch-1.4.0-orange'> <img src='https://img.shields.io/badge/numpy-1.17.2-red'> <img src='https://img.shields.io/badge/pandas-0.25.1-lightgrey'> <img src='https://img.shields.io/badge/dgl-0.4.3-blue'> <img src='https://img.shields.io/badge/scikit__learn-0.22.2-green'>
-
-
-- Dependencies can also be installed using `pip install -r requirements.txt`
-
 # Install
 
 [![download:pretrained.tar.gz](https://img.shields.io/badge/download-pretrained.tar.gz-brightgreen)](https://github.com/ZJUFanLab/DeepSort/releases/download/v2.0/pretrained.tar.gz)
@@ -49,6 +41,13 @@ After executing the above steps, the final DeepSort tree should look like this:
  |- requirements.txt
  |- README.md
 ```
+
+# Dependency
+
+<img src='https://img.shields.io/badge/scipy-1.3.1-yellowgreen'> <img src='https://img.shields.io/badge/torch-1.4.0-orange'> <img src='https://img.shields.io/badge/numpy-1.17.2-red'> <img src='https://img.shields.io/badge/pandas-0.25.1-lightgrey'> <img src='https://img.shields.io/badge/dgl-0.4.3-blue'> <img src='https://img.shields.io/badge/scikit__learn-0.22.2-green'>
+
+
+- Dependencies can also be installed using `pip install -r requirements.txt`
 
 # Usage
 
