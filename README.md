@@ -9,7 +9,7 @@ To addresses this challenge, we developed a reference-free cell-type annotation 
 
 # Install
 
-[![download:pretrained.tar.gz](https://img.shields.io/badge/download-pretrained.tar.gz-brightgreen)](https://github.com/ZJUFanLab/DeepSort/releases/download/v2.0/pretrained.tar.gz)
+[![download:pretrained.tar.gz](https://img.shields.io/badge/download-pretrained.tar.gz-yellow)](https://github.com/ZJUFanLab/DeepSort/releases/download/v2.0/pretrained.tar.gz)
 
 1. Download source codes of DeepSort.
 2. Download pretrained models from the release page and uncompress them.
