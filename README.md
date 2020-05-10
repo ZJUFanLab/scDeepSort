@@ -43,9 +43,7 @@ After executing the above steps, the final DeepSort tree should look like this:
 ```
 
 # Dependency
-
-<img src='https://img.shields.io/badge/scipy-1.3.1-yellowgreen'> <img src='https://img.shields.io/badge/torch-1.4.0-orange'> <img src='https://img.shields.io/badge/numpy-1.17.2-red'> <img src='https://img.shields.io/badge/pandas-0.25.1-lightgrey'> <img src='https://img.shields.io/badge/dgl-0.4.3-blue'> <img src='https://img.shields.io/badge/scikit__learn-0.22.2-green'>
-
+[![scipy-1.3.1](https://img.shields.io/badge/scipy-1.3.1-yellowgreen)](https://github.com/scipy/scipy) [![torch-1.4.0](https://img.shields.io/badge/torch-1.4.0-orange)](https://github.com/pytorch/pytorch) [![numpy-1.17.2](https://img.shields.io/badge/numpy-1.17.2-red)](https://github.com/numpy/numpy) [![pandas-0.25.1](https://img.shields.io/badge/pandas-0.25.1-lightgrey)](https://github.com/pandas-dev/pandas) [![dgl-0.4.3](https://img.shields.io/badge/dgl-0.4.3-blue)](https://github.com/dmlc/dgl) [![scikit__learn-0.22.2](https://img.shields.io/badge/scikit__learn-0.22.2-green)](https://github.com/scikit-learn/scikit-learn)
 
 - Dependencies can also be installed using `pip install -r requirements.txt`
 
