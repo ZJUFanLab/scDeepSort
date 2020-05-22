@@ -31,6 +31,11 @@ After executing the above steps, the final scDeepSort tree should look like this
  |- test
      |- human
      |- mouse
+ |- map
+    |- human
+        |- map.xlsx
+    |- mouse
+        |- map.xlsx
  |- models
     |- __init__.py
     |- gnn.py
@@ -67,18 +72,34 @@ After executing the above steps, the final scDeepSort tree should look like this
 
 ### Run
 
-To test one data file `human_Pancreas11.csv`, you should execute the following command:
+#### Evaluate
+To evaluate one data file `mouse_Liver4122_data.csv`, which we report the prediction accuracy in the paper, you should execute the following command:
 ```shell script
-python run.py --species human --tissue Pancreas --test_dataset 11 --gpu -1 --threshold 0
+python run.py --species human --tissue Liver --test_dataset 4122 --gpu -1 --evaluate
 ```
 - ``--species`` The species of cells, `human` or `mouse`.
 - ``--tissue`` The tissue of cells. see __Details__
 - ``--test_dataset`` The dataset to be tested, in other words, as the file naming rule states, it is exactly the number of cells in the data file.
 - ``--gpu`` Specify the GPU to use, `-1` for cpu.
-- ``--threshold`` The threshold that constitutes the edge in the graph, default is 0.
+
+#### Test
+To test one data file `human_Pancreas11.csv`, you should execute the following command:
+```shell script
+python run.py --species human --tissue Pancreas --test_dataset 11 --gpu -1 --test
+```
+- ``--species`` The species of cells, `human` or `mouse`.
+- ``--tissue`` The tissue of cells. see __Details__
+- ``--test_dataset`` The dataset to be tested, in other words, as the file naming rule states, it is exactly the number of cells in the data file.
+- ``--gpu`` Specify the GPU to use, `-1` for cpu.
 
 ### Output
-For each test dataset, it will output a `.csv` file named as `species_Tissue_Number.csv` under the `result` directory. For example, output of test dataset `human_Pancreas11_data.csv` is `human_Pancreas_11.csv`
+For each dataset, it will output a `.csv` file named as `species_Tissue_Number.csv` under the `result` directory. For example, output of test dataset `human_Pancreas11_data.csv` is `human_Pancreas_11.csv`
+
+**Evaluate:**
+
+Each line of the output file corresponds to the original cell type and predictive cell type.
+
+**Test:**
 
 Each line of the output file corresponds to the predictive cell type.
 
@@ -176,11 +197,11 @@ Each line of the output file corresponds to the predictive cell type.
 
 # Examples
 ```
-python run.py --species human --tissue Pancreas --test_dataset 11 --gpu -1 --threshold 0
+python run.py --species human --tissue Pancreas --test_dataset 11 --gpu -1 --test
 ```
 
 ```
-python run.py --species mouse --tissue Intestine --test_dataset 28 --gpu -1 --threshold 0
+python run.py --species mouse --tissue Intestine --test_dataset 28 --gpu -1 --test
 ```
 
 

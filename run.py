@@ -20,7 +20,11 @@ class Runner:
         self.postfix = time.strftime('%d_%m_%Y') + '_' + time.strftime('%H:%M:%S')
         self.prj_path = Path(__file__).parent.resolve()
         self.device = torch.device('cpu' if self.params.gpu == -1 else f'cuda:{params.gpu}')
-        self.total_cell, self.num_genes, self.num_classes, self.id2label, self.test_dict = load_data(params)
+        if self.params.evaluate:
+            self.total_cell, self.num_genes, self.num_classes, self.id2label, self.test_dict, self.map_dict = load_data(
+                params)
+        else:
+            self.total_cell, self.num_genes, self.num_classes, self.id2label, self.test_dict = load_data(params)
         """
         test_dict = {
             'graph': test_graph_dict,
@@ -40,14 +44,18 @@ class Runner:
 
     def run(self):
         for num in self.params.test_dataset:
-            pred = self.inference(num)
+            if self.params.evaluate:
+                correct, total, acc, pred = self.evaluate_test(num)
+                print(
+                    f"{self.params.species}_{self.params.tissue} #{num} Test Acc: {acc:.4f}, [{correct}/{total}]")
+            else:
+                pred = self.inference(num)
             self.save_pred(num, pred)
 
     def load_model(self):
         model_path = self.prj_path / 'pretrained' / self.params.species / 'models' / f'{self.params.species}-{self.params.tissue}.pt'
         state = torch.load(model_path, map_location=self.device)
         self.model.load_state_dict(state['model'])
-        # self.optimizer.load_state_dict(state['optimizer'])
 
     def inference(self, num):
         self.model.eval()
@@ -71,12 +79,41 @@ class Runner:
         predict_label = self.id2label[indices]
         return predict_label
 
+    def evaluate_test(self, num):
+        self.model.eval()
+        new_logits = torch.zeros((self.test_dict['graph'][num].number_of_nodes(), self.num_classes))
+        for nf in NeighborSampler(g=self.test_dict['graph'][num],
+                                  batch_size=self.params.batch_size,
+                                  expand_factor=self.total_cell + self.num_genes,
+                                  num_hops=1,
+                                  neighbor_type='in',
+                                  shuffle=False,
+                                  num_workers=8,
+                                  seed_nodes=self.test_dict['nid'][num]):
+            nf.copy_from_parent()  # Copy node/edge features from the parent graph.
+            with torch.no_grad():
+                logits = self.model(nf).cpu()
+            batch_nids = nf.layer_parent_nid(-1).type(torch.long)
+            new_logits[batch_nids] = logits
+
+        new_logits = new_logits[self.test_dict['mask'][num]]
+        indices = new_logits.numpy().argmax(axis=1)
+        predict_label = self.id2label[indices]
+        correct = 0
+        for p_label, t_label in zip(predict_label, self.test_dict['label'][num]):
+            if p_label in self.map_dict[num][t_label]:
+                correct += 1
+        total = predict_label.shape[0]
+        return correct, total, correct / total, predict_label
 
     def save_pred(self, num, pred):
         save_path = self.prj_path / self.params.save_dir
         if not save_path.exists():
             save_path.mkdir()
-        df = pd.DataFrame({'prediction': pred})
+        if self.params.evaluate:
+            df = pd.DataFrame({'original label': self.test_dict['label'][num], 'prediction': pred})
+        else:
+            df = pd.DataFrame({'prediction': pred})
         df.to_csv(
             save_path / (self.params.species + f"_{self.params.tissue}_{num}.csv"),
             index=False)
@@ -87,19 +124,21 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--gpu", type=int, default=-1,
                         help="GPU id, -1 for cpu")
-    parser.add_argument("--threshold", type=float, default=0)
     parser.add_argument("--test_dataset", nargs="+", required=True, type=int,
                         help="list of dataset id")
     parser.add_argument("--species", default='mouse', type=str)
     parser.add_argument("--tissue", required=True, type=str)
     parser.add_argument("--batch_size", type=int, default=500)
-    # parser.add_argument("--save_dir", type=str, default='result')
+    parser.add_argument("--evaluate", dest='evaluate', action='store_true')
+    parser.add_argument("--test", dest='evaluate', action='store_false')
+    parser.set_defaults(evaluate=True)
     params = parser.parse_args()
     params.dropout = 0.1
     params.dense_dim = 400
     params.hidden_dim = 200
     params.test_dir = 'test'
     params.random_seed = 10086
+    params.threshold = 0
     params.save_dir = 'result'
     pprint(vars(params))
 

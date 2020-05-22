@@ -12,6 +12,23 @@ from pathlib import Path
 import numpy as np
 
 
+def get_map_dict(map_path: Path, tissue):
+    map_df = pd.read_excel(map_path / 'map.xlsx')
+    # {num: {test_cell1: {train_cell1, train_cell2}, {test_cell2:....}}, num_2:{}...}
+    map_dic = dict()
+    for idx, row in enumerate(map_df.itertuples()):
+        if getattr(row, 'Tissue') == tissue:
+            num = getattr(row, 'num')
+            test_celltype = getattr(row, 'Celltype')
+            train_celltype = getattr(row, '_5')
+            if map_dic.get(getattr(row, 'num')) is None:
+                map_dic[num] = dict()
+                map_dic[num][test_celltype] = set()
+            elif map_dic[num].get(test_celltype) is None:
+                map_dic[num][test_celltype] = set()
+            map_dic[num][test_celltype].add(train_celltype)
+    return map_dic
+
 
 def normalize_weight(graph: dgl.DGLGraph):
     # normalize weight & add self-loop
@@ -51,6 +68,10 @@ def load_data(params):
     species_data_path = proj_path / 'pretrained' / params.species
     statistics_path = species_data_path / 'statistics'
 
+    if params.evaluate:
+        map_path = proj_path / 'map' / params.species
+        map_dict = get_map_dict(map_path, tissue)
+
     if not statistics_path.exists():
         statistics_path.mkdir()
 
@@ -72,6 +93,8 @@ def load_data(params):
     print(f"totally {num_genes} genes, {num_labels} labels.")
 
     test_graph_dict = dict()  # test-graph dict
+    if params.evaluate:
+        test_label_dict = dict()  # test label dict
     test_index_dict = dict()  # test feature indices in all features
     test_mask_dict = dict()
     test_nid_dict = dict()
@@ -113,7 +136,14 @@ def load_data(params):
     for num in test:
         start = time()
         data_path = proj_path / params.test_dir / params.species / f'{params.species}_{tissue}{num}_data.csv'
-
+        if params.evaluate:
+            type_path = proj_path / params.test_dir / params.species / f'{params.species}_{tissue}{num}_celltype.csv'
+            # load celltype file then update labels accordingly
+            cell2type = pd.read_csv(type_path, index_col=0)
+            cell2type.columns = ['cell', 'type']
+            cell2type['type'] = cell2type['type'].map(str.strip)
+            # test_labels += cell2type['type'].tolist()
+            test_label_dict[num] = cell2type['type'].tolist()
 
         # load data file then update graph
         df = pd.read_csv(data_path, index_col=0)  # (gene, cell)
@@ -185,10 +215,18 @@ def load_data(params):
                 1)})
         test_graph_dict[num].readonly()
 
-    test_dict = {
-        'graph': test_graph_dict,
-        'nid': test_nid_dict,
-        'mask': test_mask_dict
-    }
-
-    return total_cell, num_genes, num_labels, np.array(id2label, dtype=np.str), test_dict
+    if params.evaluate:
+        test_dict = {
+            'graph': test_graph_dict,
+            'label': test_label_dict,
+            'nid': test_nid_dict,
+            'mask': test_mask_dict
+        }
+        return total_cell, num_genes, num_labels, np.array(id2label, dtype=np.str), test_dict, map_dict
+    else:
+        test_dict = {
+            'graph': test_graph_dict,
+            'nid': test_nid_dict,
+            'mask': test_mask_dict
+        }
+        return total_cell, num_genes, num_labels, np.array(id2label, dtype=np.str), test_dict
