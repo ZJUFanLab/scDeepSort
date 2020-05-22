@@ -204,4 +204,4 @@ python run.py --species human --tissue Pancreas --test_dataset 11 --gpu -1 --tes
 python run.py --species mouse --tissue Intestine --test_dataset 28 --gpu -1 --test
 ```
 
-
+To test all datasets, please download [human_test_data](https://github.com/ZJUFanLab/DeepSort/releases/download/v2.0/human_test_data.7z) and [mouse_test_data](https://github.com/ZJUFanLab/DeepSort/releases/download/v2.0/mouse_test_data.7z) in [release page](https://github.com/ZJUFanLab/DeepSort/releases)
