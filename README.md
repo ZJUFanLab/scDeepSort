@@ -75,22 +75,24 @@ After executing the above steps, the final scDeepSort tree should look like this
 #### Evaluate
 To evaluate one data file `mouse_Liver4122_data.csv`, which we report the prediction accuracy in the paper, you should execute the following command:
 ```shell script
-python run.py --species human --tissue Liver --test_dataset 4122 --gpu -1 --evaluate
+python run.py --species human --tissue Liver --test_dataset 4122 --gpu -1 --evaluate --filetype csv
 ```
 - ``--species`` The species of cells, `human` or `mouse`.
 - ``--tissue`` The tissue of cells. see __Details__
 - ``--test_dataset`` The dataset to be tested, in other words, as the file naming rule states, it is exactly the number of cells in the data file.
 - ``--gpu`` Specify the GPU to use, `-1` for cpu.
+- ``--filetype`` The format of datafile, `csv` or `gz`, to evaluate data file `mouse_Liver4122_data.gz`, should specify this argument as `--filetype gz`
 
 #### Test
 To test one data file `human_Pancreas11.csv`, you should execute the following command:
 ```shell script
-python run.py --species human --tissue Pancreas --test_dataset 11 --gpu -1 --test
+python run.py --species human --tissue Pancreas --test_dataset 11 --gpu -1 --test --filetype csv
 ```
 - ``--species`` The species of cells, `human` or `mouse`.
 - ``--tissue`` The tissue of cells. see __Details__
 - ``--test_dataset`` The dataset to be tested, in other words, as the file naming rule states, it is exactly the number of cells in the data file.
 - ``--gpu`` Specify the GPU to use, `-1` for cpu.
+- ``--filetype`` The format of datafile, `csv` or `gz`, to test data file `human_Pancreas11.gz`, should specify this argument as `--filetype gz`
 
 ### Output
 For each dataset, it will output a `.csv` file named as `species_Tissue_Number.csv` under the `result` directory. For example, output of test dataset `human_Pancreas11_data.csv` is `human_Pancreas_11.csv`
@@ -102,6 +104,16 @@ Each line of the output file corresponds to the original cell type and predictiv
 **Test:**
 
 Each line of the output file corresponds to the predictive cell type.
+
+### Train
+To train the model on human Adipose, you should execute the following command:
+```shell script
+python run_internal.py --species human --tissue Adipose --gpu 0
+```
+- ``--species`` The species of cells, `human` or `mouse`.
+- ``--tissue`` The tissue of cells, see __Details__
+- ``--gpu`` Specify the GPU to use, `-1` for cpu
+
 
 ### Details
 
