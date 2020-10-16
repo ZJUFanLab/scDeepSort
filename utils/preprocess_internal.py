@@ -24,7 +24,7 @@ def normalize_weight(graph: dgl.DGLGraph):
 
 
 def get_id_2_gene(species_data_path, species, tissue):
-    data_path = species_data_path / 'atlas'
+    data_path = species_data_path
     data_files = data_path.glob(f'{species}_{tissue}*_data.csv')
     genes = None
     for file in data_files:
@@ -39,7 +39,7 @@ def get_id_2_gene(species_data_path, species, tissue):
 
 
 def get_id_2_label_and_label_statistics(species_data_path, species, tissue):
-    data_path = species_data_path / 'atlas'
+    data_path = species_data_path
     cell_files = data_path.glob(f'{species}_{tissue}*_celltype.csv')
     cell_types = set()
     cell_type_list = list()
@@ -61,12 +61,9 @@ def load_data_internal(params):
     device = torch.device('cpu' if params.gpu == -1 else f'cuda:{params.gpu}')
 
     proj_path = Path(__file__).parent.resolve().parent.resolve()
-    species_data_path = proj_path / 'data' / species
+    species_data_path = proj_path / 'train' / species
     if not species_data_path.exists():
         raise NotImplementedError
-    statistics_path = species_data_path / 'atlas_statistics'
-    if not statistics_path.exists():
-        statistics_path.mkdir()
 
     # generate gene statistics file
     id2gene = get_id_2_gene(species_data_path, species, tissue)
@@ -93,11 +90,11 @@ def load_data_internal(params):
     matrices = []
     num_cells = 0
 
-    data_path = species_data_path / 'atlas'
+    data_path = species_data_path
     data_files = data_path.glob(f'*{params.species}_{tissue}*_data.csv')
     for data_file in data_files:
         number = ''.join(list(filter(str.isdigit, data_file.name)))
-        type_file = species_data_path / f'atlas/{params.species}_{tissue}{number}_celltype.csv'
+        type_file = species_data_path / f'{params.species}_{tissue}{number}_celltype.csv'
 
         # load celltype file then update labels accordingly
         cell2type = pd.read_csv(type_file, index_col=0)
