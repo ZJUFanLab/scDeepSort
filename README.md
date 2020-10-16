@@ -31,6 +31,9 @@ After executing the above steps, the final scDeepSort tree should look like this
  |- test
      |- human
      |- mouse
+ |- train
+     |- human
+     |- mouse
  |- map
     |- human
         |- map.xlsx
@@ -42,7 +45,9 @@ After executing the above steps, the final scDeepSort tree should look like this
  |- utils
     |- __init__.py
     |- preprocess.py
+    |- preprocess_internal.py
  |- run.py
+ |- run_internal.py
  |- requirements.txt
  |- README.md
 ```
@@ -114,6 +119,10 @@ python run_internal.py --species human --tissue Adipose --gpu 0
 - ``--tissue`` The tissue of cells, see __Details__
 - ``--gpu`` Specify the GPU to use, `-1` for cpu
 
+Similarly, to train model on mouse Muscle, you should execute the following command:
+```shell script
+python run_internal.py --species mouse --tissue Muscle --gpu 0
+```
 
 ### Details
 
