@@ -1,8 +1,6 @@
 import argparse
-
 import pandas as pd
 import dgl
-from time import time
 import torch
 import torch.nn.functional as F
 import collections
@@ -10,6 +8,7 @@ from scipy.sparse import csr_matrix, vstack, load_npz
 from sklearn.decomposition import PCA
 from pathlib import Path
 import numpy as np
+import h5py
 
 
 def get_map_dict(map_path: Path, tissue):
@@ -90,7 +89,7 @@ def load_data(params):
     # prepare unified labels
     num_labels = len(id2label)
     label2id = {label: idx for idx, label in enumerate(id2label)}
-    print(f"totally {num_genes} genes, {num_labels} labels.")
+    print(f"The build graph contains {num_genes} gene nodes with {num_labels} labels supported.")
 
     test_graph_dict = dict()  # test-graph dict
     if params.evaluate:
@@ -134,8 +133,7 @@ def load_data(params):
                                                              device=device).unsqueeze(1)})
 
     for num in test:
-        start = time()
-        data_path = proj_path / params.test_dir / params.species / f'{params.species}_{tissue}{num}_data.csv'
+        data_path = proj_path / params.test_dir / params.species / f'{params.species}_{tissue}{num}_data.{params.filetype}'
         if params.evaluate:
             type_path = proj_path / params.test_dir / params.species / f'{params.species}_{tissue}{num}_celltype.csv'
             # load celltype file then update labels accordingly
@@ -146,7 +144,15 @@ def load_data(params):
             test_label_dict[num] = cell2type['type'].tolist()
 
         # load data file then update graph
-        df = pd.read_csv(data_path, index_col=0)  # (gene, cell)
+        if params.filetype == 'csv':
+            df = pd.read_csv(data_path, index_col=0)  # (gene, cell)
+        elif params.filetype == 'gz':
+            df = pd.read_csv(data_path, compression='gzip', index_col=0)
+        elif params.filetype in ['h5', 'hdf5']:
+            pass
+        else:
+            print(f'Not supported type for {data_path}. Please verify your data file')
+        
         df = df.transpose(copy=True)  # (cell, gene)
 
         df = df.rename(columns=gene2id)
@@ -154,8 +160,7 @@ def load_data(params):
         col = [c for c in df.columns if c in gene2id.values()]
         df = df[col]
 
-        print(
-            f'{params.species}_{tissue}{num}_data.csv -> Nonzero Ratio: {df.fillna(0).astype(bool).sum().sum() / df.size * 100:.2f}%')
+        print(f'{params.species}_{tissue}{num}_data.{params.filetype} -> Nonzero Ratio: {df.fillna(0).astype(bool).sum().sum() / df.size * 100:.2f}%')
 
         # maintain inter-datasets index for graph and RNA-seq values
         arr = df.to_numpy()
@@ -181,7 +186,6 @@ def load_data(params):
                                                                device=device).unsqueeze(1)})
 
         print(f'Added {len(df)} nodes and {len(cell_idx)} edges.')
-        print(f'Costs {time() - start:.3f}s in total.')
         total_cell += num
 
     support_index = list(range(num_genes + support_num))

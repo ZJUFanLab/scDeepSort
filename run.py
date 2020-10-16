@@ -44,12 +44,14 @@ class Runner:
 
     def run(self):
         for num in self.params.test_dataset:
+            tic = time.time()
             if self.params.evaluate:
-                correct, total, acc, pred = self.evaluate_test(num)
-                print(
-                    f"{self.params.species}_{self.params.tissue} #{num} Test Acc: {acc:.4f}, [{correct}/{total}]")
+                correct, total, unsure, acc, pred = self.evaluate_test(num)
+                print(f"{self.params.species}_{self.params.tissue} #{num} Test Acc: {acc:.4f} ({correct}/{total}), Number of Unsure Cells: {unsure}")
             else:
                 pred = self.inference(num)
+            toc = time.time()
+            print(f'{self.params.species}_{self.params.tissue} #{num} Time Consumed: {toc - tic:.2f} seconds.')
             self.save_pred(num, pred)
 
     def load_model(self):
@@ -75,8 +77,15 @@ class Runner:
             new_logits[batch_nids] = logits
 
         new_logits = new_logits[self.test_dict['mask'][num]]
-        indices = new_logits.numpy().argmax(axis=1)
-        predict_label = self.id2label[indices]
+        new_logits = nn.functional.softmax(new_logits, dim=1).numpy()
+        predict_label = []
+        for pred in new_logits:
+            pred_label = self.id2label[pred.argmax().item()]
+            if pred.max().item() < self.params.unsure_rate / self.num_classes:
+                # unsure
+                predict_label.append('unsure')
+            else:
+                predict_label.append(pred_label)
         return predict_label
 
     def evaluate_test(self, num):
@@ -97,23 +106,47 @@ class Runner:
             new_logits[batch_nids] = logits
 
         new_logits = new_logits[self.test_dict['mask'][num]]
-        indices = new_logits.numpy().argmax(axis=1)
-        predict_label = self.id2label[indices]
-        correct = 0
-        for p_label, t_label in zip(predict_label, self.test_dict['label'][num]):
-            if p_label in self.map_dict[num][t_label]:
-                correct += 1
-        total = predict_label.shape[0]
-        return correct, total, correct / total, predict_label
+        new_logits = nn.functional.softmax(new_logits, dim=1).numpy()
+        total = new_logits.shape[0]
+        unsure_num, correct = 0, 0
+        predict_label = []
+        for pred, t_label in zip(new_logits, self.test_dict['label'][num]):
+            pred_label = self.id2label[pred.argmax().item()]
+            if pred.max().item() < self.params.unsure_rate / self.num_classes:
+                # unsure
+                unsure_num += 1
+                predict_label.append('unsure')
+            else:
+                if pred_label in self.map_dict[num][t_label]:
+                    correct += 1
+                predict_label.append(pred_label)
+        return correct, total, unsure_num, correct / total, predict_label
 
     def save_pred(self, num, pred):
+        label_map = pd.read_excel('./map/celltype2subtype.xlsx',
+                sheet_name=self.params.species, header=0,
+                names=['species', 'old_type', 'new_type', 'new_subtype'])
+        label_map = label_map.fillna('N/A', inplace=False)
+        oldtype2newtype = {}
+        oldtype2newsubtype = {}
+        for _, old_type, new_type, new_subtype in label_map.itertuples(index=False):
+            oldtype2newtype[old_type] = new_type
+            oldtype2newsubtype[old_type] = new_subtype
+
         save_path = self.prj_path / self.params.save_dir
         if not save_path.exists():
             save_path.mkdir()
         if self.params.evaluate:
-            df = pd.DataFrame({'original label': self.test_dict['label'][num], 'prediction': pred})
+            df = pd.DataFrame({
+                'index': list(range(len(pred))),
+                'original label': self.test_dict['label'][num],
+                'cell_type': [oldtype2newtype.get(p, p) for p in pred],
+                'cell_subtype': [oldtype2newsubtype.get(p, p) for p in pred]})
         else:
-            df = pd.DataFrame({'prediction': pred})
+            df = pd.DataFrame({
+                'index': list(range(len(pred))),
+                'cell_type': [oldtype2newtype.get(p, p) for p in pred],
+                'cell_subtype': [oldtype2newsubtype.get(p, p) for p in pred]})
         df.to_csv(
             save_path / (self.params.species + f"_{self.params.tissue}_{num}.csv"),
             index=False)
@@ -124,13 +157,15 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--gpu", type=int, default=-1,
                         help="GPU id, -1 for cpu")
+    parser.add_argument("--filetype", default='csv', type=str, choices=['csv', 'gz', 'h5', 'hdf5'])
     parser.add_argument("--test_dataset", nargs="+", required=True, type=int,
                         help="list of dataset id")
-    parser.add_argument("--species", default='mouse', type=str)
+    parser.add_argument("--species", default='mouse', type=str, choices=['human', 'mouse'])
     parser.add_argument("--tissue", required=True, type=str)
     parser.add_argument("--batch_size", type=int, default=500)
     parser.add_argument("--evaluate", dest='evaluate', action='store_true')
     parser.add_argument("--test", dest='evaluate', action='store_false')
+    parser.add_argument("--unsure_rate", type=float, default=2.)
     parser.set_defaults(evaluate=True)
     params = parser.parse_args()
     params.dropout = 0.1
