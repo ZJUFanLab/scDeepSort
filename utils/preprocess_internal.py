@@ -23,12 +23,15 @@ def normalize_weight(graph: dgl.DGLGraph):
         graph.edata['weight'][in_edge_id] = in_degrees[i] * edge_w / torch.sum(edge_w)
 
 
-def get_id_2_gene(species_data_path, species, tissue):
+def get_id_2_gene(species_data_path, species, tissue, filetype):
     data_path = species_data_path
-    data_files = data_path.glob(f'{species}_{tissue}*_data.csv')
+    data_files = data_path.glob(f'{species}_{tissue}*_data.{filetype}')
     genes = None
     for file in data_files:
-        data = pd.read_csv(file, dtype=np.str, header=0).values[:, 0]
+        if filetype == 'csv':
+            data = pd.read_csv(file, dtype=np.str, header=0).values[:, 0]
+        else:
+            data = pd.read_csv(file, compression='gzip', header=0).values[:, 0]
         if genes is None:
             genes = set(data)
         else:
@@ -147,7 +150,8 @@ def load_data_internal(params):
         col = [c for c in df.columns if c in gene2id.values()]
         df = df[col]
 
-        print(f'{params.species}_{tissue}{num}_data.{params.filetype} -> Nonzero Ratio: {df.fillna(0).astype(bool).sum().sum() / df.size * 100:.2f}%')
+        print(
+            f'{params.species}_{tissue}{num}_data.{params.filetype} -> Nonzero Ratio: {df.fillna(0).astype(bool).sum().sum() / df.size * 100:.2f}%')
 
         # maintain inter-datasets index for graph and RNA-seq values
         arr = df.to_numpy()
