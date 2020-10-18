@@ -21,10 +21,9 @@ class Runner:
         self.prj_path = Path(__file__).parent.resolve()
         self.device = torch.device('cpu' if self.params.gpu == -1 else f'cuda:{params.gpu}')
         if self.params.evaluate:
-            self.total_cell, self.num_genes, self.num_classes, self.id2label, self.test_dict, self.map_dict = load_data(
-                params)
+            self.total_cell, self.num_genes, self.num_classes, self.id2label, self.test_dict, self.map_dict, self.time = load_data(params)
         else:
-            self.total_cell, self.num_genes, self.num_classes, self.id2label, self.test_dict = load_data(params)
+            self.total_cell, self.num_genes, self.num_classes, self.id2label, self.test_dict, self.time = load_data(params)
         """
         test_dict = {
             'graph': test_graph_dict,
@@ -51,7 +50,7 @@ class Runner:
             else:
                 pred = self.inference(num)
             toc = time.time()
-            print(f'{self.params.species}_{self.params.tissue} #{num} Time Consumed: {toc - tic:.2f} seconds.')
+            print(f'{self.params.species}_{self.params.tissue} #{num} Time Consumed: {toc - tic + self.time:.2f} seconds.')
             self.save_pred(num, pred)
 
     def load_model(self):

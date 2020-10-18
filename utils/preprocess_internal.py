@@ -147,7 +147,7 @@ def load_data_internal(params):
         col = [c for c in df.columns if c in gene2id.values()]
         df = df[col]
 
-        print(f'Nonzero Ratio: {df.fillna(0).astype(bool).sum().sum() / df.size * 100:.2f}%')
+        print(f'{params.species}_{tissue}{num}_data.{params.filetype} -> Nonzero Ratio: {df.fillna(0).astype(bool).sum().sum() / df.size * 100:.2f}%')
 
         # maintain inter-datasets index for graph and RNA-seq values
         arr = df.to_numpy()

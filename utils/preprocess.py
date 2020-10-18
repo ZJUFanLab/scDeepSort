@@ -8,6 +8,7 @@ from scipy.sparse import csr_matrix, vstack, load_npz
 from sklearn.decomposition import PCA
 from pathlib import Path
 import numpy as np
+from time import time
 
 
 def get_map_dict(map_path: Path, tissue):
@@ -162,7 +163,8 @@ def load_data(params):
         df = df[col]
 
         print(f'{params.species}_{tissue}{num}_data.{params.filetype} -> Nonzero Ratio: {df.fillna(0).astype(bool).sum().sum() / df.size * 100:.2f}%')
-
+        tic = time()
+        print(f'Begin to cumulate time of training/testing ...')
         # maintain inter-datasets index for graph and RNA-seq values
         arr = df.to_numpy()
         row_idx, col_idx = np.nonzero(arr > params.threshold)  # intra-dataset index
@@ -228,7 +230,8 @@ def load_data(params):
             'mask': test_mask_dict,
             'origin_id': test_cell_origin_id_dict
         }
-        return total_cell, num_genes, num_labels, np.array(id2label, dtype=np.str), test_dict, map_dict
+        time_used = time() - tic
+        return total_cell, num_genes, num_labels, np.array(id2label, dtype=np.str), test_dict, map_dict, time_used
     else:
         test_dict = {
             'graph': test_graph_dict,
@@ -236,4 +239,5 @@ def load_data(params):
             'mask': test_mask_dict,
             'origin_id': test_cell_origin_id_dict
         }
-        return total_cell, num_genes, num_labels, np.array(id2label, dtype=np.str), test_dict
+        time_used = time() - tic
+        return total_cell, num_genes, num_labels, np.array(id2label, dtype=np.str), test_dict, time_used
