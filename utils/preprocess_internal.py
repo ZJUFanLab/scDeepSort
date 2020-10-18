@@ -111,7 +111,7 @@ def load_data_internal(params):
     num_cells = 0
 
     data_path = species_data_path
-    data_files = data_path.glob(f'*{params.species}_{tissue}*_data.csv')
+    data_files = data_path.glob(f'*{params.species}_{tissue}*_data.{params.filetype}')
     for data_file in data_files:
         number = ''.join(list(filter(str.isdigit, data_file.name)))
         type_file = species_data_path / f'{params.species}_{tissue}{number}_celltype.csv'
@@ -132,9 +132,9 @@ def load_data_internal(params):
         # df = pd.read_csv(data_file, index_col=0)  # (gene, cell)
 
         if params.filetype == 'csv':
-            df = pd.read_csv(data_path, index_col=0)  # (gene, cell)
+            df = pd.read_csv(data_file, index_col=0)  # (gene, cell)
         elif params.filetype == 'gz':
-            df = pd.read_csv(data_path, compression='gzip', index_col=0)
+            df = pd.read_csv(data_file, compression='gzip', index_col=0)
         else:
             print(f'Not supported type for {data_path}. Please verify your data file')
 
