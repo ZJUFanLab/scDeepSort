@@ -8,9 +8,12 @@ Recent advance in single-cell RNA sequencing (scRNA-seq) has enabled large-scale
 To addresses this challenge, we developed a reference-free cell-type annotation method, namely scDeepSort, using a state-of-the-art deep learning algorithm, i.e. a modified graph neural network (GNN) model. It’s the first time that GNN is introduced into scRNA-seq studies and demonstrate its ground-breaking performances in this application scenario. In brief, scDeepSort was constructed based on our weighted GNN framework and was then learned in two embedded high-quality scRNA-seq atlases containing 764,741 cells across 88 tissues of human and mouse, which are the most comprehensive multiple-organs scRNA-seq data resources to date. For more information, please refer to a preprint in [bioRxiv 2020.05.13.094953.](https://www.biorxiv.org/content/10.1101/2020.05.13.094953v1)
 
 # Install
+[![dwonload pretrained models](https://img.shields.io/badge/download-pretrained%20models-orange)](https://github.com/ZJUFanLab/scDeepSort/releases/download/pretrained_model/pretrained.tar.gz)
 
 1. Download source codes of scDeepSort.
 2. Download pretrained models from the [release page](https://github.com/ZJUFanLab/scDeepSort/releases) and uncompress them.
+
+
 ```
 tar -xzvf pretrained.tar.gz
 ```
