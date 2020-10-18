@@ -69,7 +69,7 @@ After executing the above steps, the final scDeepSort tree should look like this
 ## Predict using pre-trained models
 
 1. The file name of test data should be named in this format: **species_TissueNumber_data.csv**. For example, `human_Pancreas11_data.csv` is a data file containing 11 human pancreas cells.
-2. The test single-cell transcriptomics csv data file should be pre-processed by first revising gene symbols according to [NCBI Gene database](https://www.ncbi.nlm.nih.gov/gene) updated on Jan. 10, 2020, wherein unmatched genes and duplicated genes will be removed. Then the data should be normalized with the defalut `LogNormalize` method in `Seurat` (R package), detailed in `pre-process.R`, wherein the column represents each cell and the row represent each gene for final test data, as shown below. 
+2. The test single-cell transcriptomics csv data file should be pre-processed by first revising gene symbols according to [NCBI Gene database](https://www.ncbi.nlm.nih.gov/gene) updated on Jan. 10, 2020, wherein unmatched genes and duplicated genes will be removed. Then the data should be normalized with the defalut `LogNormalize` method in `Seurat` (R package), detailed in [`pre-process.R`](https://github.com/ZJUFanLab/scDeepSort/blob/dev/pre-process.R), wherein the column represents each cell and the row represent each gene for final test data, as shown below. 
 
       |          |Cell 1|Cell 2|Cell 3|...  |
       | :---:    |:---: | :---:| :---:|:---:|
@@ -96,7 +96,7 @@ python predict.py --species human --tissue Testis --test_dataset 199 --gpu -1 --
 
 `--gpu` Specify the GPU to use, `0` for gpu,`-1` for cpu.
 
-`--filetype` The format of datafile, `csv` for `.csv` files and `gz` for `.gz` files. See `pre-process.R`
+`--filetype` The format of datafile, `csv` for `.csv` files and `gz` for `.gz` files. See [`pre-process.R`](https://github.com/ZJUFanLab/scDeepSort/blob/dev/pre-process.R)
 
 `--unsure_rate` The threshold to define the unsure type, default is 2. Set it as 0 to exclude the unsure type.
 
@@ -119,7 +119,7 @@ python predict.py --species human --tissue Pancreas --test_dataset 11 --gpu -1 -
 
 `--gpu` Specify the GPU to use, `0` for gpu, `-1` for cpu.
 
-`--filetype` The format of datafile, `csv` for `.csv` files and `gz` for `.gz` files. See `pre-process.R`
+`--filetype` The format of datafile, `csv` for `.csv` files and `gz` for `.gz` files. See [`pre-process.R`](https://github.com/ZJUFanLab/scDeepSort/blob/dev/pre-process.R)
 
 `--unsure_rate` The threshold to define the unsure type, default is 2. Set it as 0 to exclude the unsure type.
 
