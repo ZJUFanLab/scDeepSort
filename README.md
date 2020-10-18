@@ -113,7 +113,7 @@ __Output:__ the output named as `species_Tissue_Number.csv` will be under the au
 
 
 ## Train your own model and predict
-To train your own model, you should prapare two files, i.e., a data file as descrived above, and a cell annotation file under the `./train` directory as the example files. Then execute the following command:
+To train your own model, you should prepare two files, i.e., a data file as descrived above, and a cell annotation file under the `./train` directory as the example files. Then execute the following command:
 
 ```
 python train.py --species human --tissue Adipose --gpu -1 --filetype gz
