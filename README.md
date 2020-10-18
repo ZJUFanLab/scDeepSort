@@ -88,17 +88,17 @@ to evaluate the data `mouse_Testis199_data.csv`, you should execute the followin
 python predict.py --species human --tissue Testis --test_dataset 199 --gpu -1 --evaluate --filetype gz --unsure_rate 2
 ```
 
-`--species` The species of cells, `human` or `mouse`.
+- `--species` The species of cells, `human` or `mouse`.
 
-`--tissue` The tissue of cells. See [wiki page](https://github.com/ZJUFanLab/scDeepSort/wiki)
+- `--tissue` The tissue of cells. See [wiki page](https://github.com/ZJUFanLab/scDeepSort/wiki)
 
-`--test_dataset` The number of cells in the test data.
+- `--test_dataset` The number of cells in the test data.
 
-`--gpu` Specify the GPU to use, `0` for gpu,`-1` for cpu.
+- `--gpu` Specify the GPU to use, `0` for gpu,`-1` for cpu.
 
-`--filetype` The format of datafile, `csv` for `.csv` files and `gz` for `.gz` files. See [`pre-process.R`](https://github.com/ZJUFanLab/scDeepSort/blob/dev/pre-process.R)
+- `--filetype` The format of datafile, `csv` for `.csv` files and `gz` for `.gz` files. See [`pre-process.R`](https://github.com/ZJUFanLab/scDeepSort/blob/dev/pre-process.R)
 
-`--unsure_rate` The threshold to define the unsure type, default is 2. Set it as 0 to exclude the unsure type.
+- `--unsure_rate` The threshold to define the unsure type, default is 2. Set it as 0 to exclude the unsure type.
 
 __Output:__ the output named as `species_Tissue_Number.csv` will be under the automatically generated `result` directory, which contains four columns, the first is the cell id, the second is the original cell type, the third is the predicted main type, the fourth is the predicted subtype if applicable.
 
@@ -111,17 +111,17 @@ to test the data `human_Pancreas11_data.csv`, you should execute the following c
 ```
 python predict.py --species human --tissue Pancreas --test_dataset 11 --gpu -1 --test --filetype csv --unsure_rate 2
 ```
-`--species` The species of cells, `human` or `mouse`.
+- `--species` The species of cells, `human` or `mouse`.
 
-`--tissue` The tissue of cells. See [wiki page](https://github.com/ZJUFanLab/scDeepSort/wiki)
+- `--tissue` The tissue of cells. See [wiki page](https://github.com/ZJUFanLab/scDeepSort/wiki)
 
-`--test_dataset` The number of cells in the test data.
+- `--test_dataset` The number of cells in the test data.
 
-`--gpu` Specify the GPU to use, `0` for gpu, `-1` for cpu.
+- `--gpu` Specify the GPU to use, `0` for gpu, `-1` for cpu.
 
-`--filetype` The format of datafile, `csv` for `.csv` files and `gz` for `.gz` files. See [`pre-process.R`](https://github.com/ZJUFanLab/scDeepSort/blob/dev/pre-process.R)
+- `--filetype` The format of datafile, `csv` for `.csv` files and `gz` for `.gz` files. See [`pre-process.R`](https://github.com/ZJUFanLab/scDeepSort/blob/dev/pre-process.R)
 
-`--unsure_rate` The threshold to define the unsure type, default is 2. Set it as 0 to exclude the unsure type.
+- `--unsure_rate` The threshold to define the unsure type, default is 2. Set it as 0 to exclude the unsure type.
 
 __Output:__ the output named as `species_Tissue_Number.csv` will be under the automatically generated `result` directory, which contains three columns, the first is the cell id, the second is the predicted main type, the third is the predicted subtype if applicable.
 
@@ -136,13 +136,13 @@ python train.py --species human --tissue Adipose --gpu -1 --filetype gz
 python train.py --species mouse --tissue Muscle --gpu -1 --filetype gz
 ```
 
-`--species` The species of cells, `human` or `mouse`.
+- `--species` The species of cells, `human` or `mouse`.
 
-`--tissue` The tissue of cells.
+- `--tissue` The tissue of cells.
 
-`--gpu` Specify the GPU to use, `0` for gpu, `-1` for cpu.
+- `--gpu` Specify the GPU to use, `0` for gpu, `-1` for cpu.
 
-`--filetype` The format of datafile, `csv` for `.csv` files and `gz` for `.gz` files. See `pre-process.R`
+- `--filetype` The format of datafile, `csv` for `.csv` files and `gz` for `.gz` files. See `pre-process.R`
 
 __Output:__ the trained model will be under the `pretrained` directory, which can be used to test new datasets on the same tissue using `predict.py` as described above. 
 
