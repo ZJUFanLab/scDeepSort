@@ -138,13 +138,13 @@ class Runner:
             save_path.mkdir()
         if self.params.evaluate:
             df = pd.DataFrame({
-                'index': list(range(len(pred))),
+                'index': self.test_dict['origin_id'][num],
                 'original label': self.test_dict['label'][num],
                 'cell_type': [oldtype2newtype.get(p, p) for p in pred],
                 'cell_subtype': [oldtype2newsubtype.get(p, p) for p in pred]})
         else:
             df = pd.DataFrame({
-                'index': list(range(len(pred))),
+                'index': self.test_dict['origin_id'][num],
                 'cell_type': [oldtype2newtype.get(p, p) for p in pred],
                 'cell_subtype': [oldtype2newsubtype.get(p, p) for p in pred]})
         df.to_csv(

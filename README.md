@@ -56,7 +56,7 @@ After executing the above steps, the final scDeepSort tree should look like this
 [![scipy-1.3.1](https://img.shields.io/badge/scipy-1.3.1-yellowgreen)](https://github.com/scipy/scipy) [![torch-1.4.0](https://img.shields.io/badge/torch-1.4.0-orange)](https://github.com/pytorch/pytorch) [![numpy-1.17.2](https://img.shields.io/badge/numpy-1.17.2-red)](https://github.com/numpy/numpy) [![pandas-0.25.1](https://img.shields.io/badge/pandas-0.25.1-lightgrey)](https://github.com/pandas-dev/pandas) [![dgl-0.4.3](https://img.shields.io/badge/dgl-0.4.3-blue)](https://github.com/dmlc/dgl) [![scikit__learn-0.22.2](https://img.shields.io/badge/scikit__learn-0.22.2-green)](https://github.com/scikit-learn/scikit-learn)
 
 - Dependencies can also be installed using `pip install -r requirements.txt`
-
+- If you want to use GPU, please install the gpu version of DGL, see [Install DGL](https://docs.dgl.ai/en/latest/install/index.html) for more details.
 # Usage
 
 ### Prepare test data
@@ -80,25 +80,26 @@ After executing the above steps, the final scDeepSort tree should look like this
 #### Evaluate
 To evaluate one data file `mouse_Liver4122_data.csv`, which we report the prediction accuracy in the paper, you should execute the following command:
 ```shell script
-python run.py --species human --tissue Liver --test_dataset 4122 --gpu -1 --evaluate --filetype csv
+python run.py --species human --tissue Liver --test_dataset 4122 --gpu -1 --evaluate --filetype csv --unsure_rate 2
 ```
 - ``--species`` The species of cells, `human` or `mouse`.
 - ``--tissue`` The tissue of cells. see __Details__
 - ``--test_dataset`` The dataset to be tested, in other words, as the file naming rule states, it is exactly the number of cells in the data file.
 - ``--gpu`` Specify the GPU to use, `-1` for cpu.
 - ``--filetype`` The format of datafile, `csv` or `gz`, to evaluate data file `mouse_Liver4122_data.gz`, should specify this argument as `--filetype gz`
+- ``--unsure_rate`` The threshold to predict unsure cell, default is 2. Setting this parameter to 0 means not predicting unsrue cell.
 
 #### Test
 To test one data file `human_Pancreas11.csv`, you should execute the following command:
 ```shell script
-python run.py --species human --tissue Pancreas --test_dataset 11 --gpu -1 --test --filetype csv
+python run.py --species human --tissue Pancreas --test_dataset 11 --gpu -1 --test --filetype csv  --unsure_rate 2
 ```
 - ``--species`` The species of cells, `human` or `mouse`.
 - ``--tissue`` The tissue of cells. see __Details__
 - ``--test_dataset`` The dataset to be tested, in other words, as the file naming rule states, it is exactly the number of cells in the data file.
 - ``--gpu`` Specify the GPU to use, `-1` for cpu.
 - ``--filetype`` The format of datafile, `csv` or `gz`, to test data file `human_Pancreas11.gz`, should specify this argument as `--filetype gz`
-
+- ``--unsure_rate`` The threshold to predict unsure cell, default is 2. Setting this parameter to 0 means not predicting unsrue cell.
 ### Output
 For each dataset, it will output a `.csv` file named as `species_Tissue_Number.csv` under the `result` directory. For example, output of test dataset `human_Pancreas11_data.csv` is `human_Pancreas_11.csv`
 
@@ -113,16 +114,21 @@ Each line of the output file corresponds to the predictive cell type.
 ### Train
 To train the model on human Adipose, you should execute the following command:
 ```shell script
-python run_internal.py --species human --tissue Adipose --gpu 0
+python run_internal.py --species human --tissue Adipose --gpu 0 --filetype csv
 ```
 - ``--species`` The species of cells, `human` or `mouse`.
 - ``--tissue`` The tissue of cells, see __Details__
 - ``--gpu`` Specify the GPU to use, `-1` for cpu
+- ``-filetype`` The format of datafile, similar to the evaluate part above.
+- Rest of the arguments can be listed using ``python run_internal.py -h``
+
 
 Similarly, to train model on mouse Muscle, you should execute the following command:
 ```shell script
 python run_internal.py --species mouse --tissue Muscle --gpu 0
 ```
+
+__NOTE__: The training process will update the existing model under the `pretrained` directory.
 
 ### Details
 

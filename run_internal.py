@@ -17,8 +17,10 @@ from pprint import pprint
 class Trainer:
     def __init__(self, params):
         self.params = params
-        self.postfix = time.strftime('%d_%m_%Y') + '_' + time.strftime('%H:%M:%S')
         self.prj_path = Path(__file__).parent.resolve()
+        self.save_path = self.prj_path / 'pretrained' / f'{self.params.species}' / 'models'
+        if not self.save_path.exists():
+            self.save_path.mkdir(parents=True)
         self.device = torch.device('cpu' if self.params.gpu == -1 else f'cuda:{params.gpu}')
         self.num_cells, self.num_genes, self.num_labels, self.graph, self.train_ids, self.test_ids, self.labels = load_data_internal(params)
         self.labels = self.labels.to(self.device)
@@ -54,6 +56,7 @@ class Trainer:
                 _train_acc = train_acc
                 _epoch = epoch
                 max_test_acc = test_acc
+                self.save_model()
             print(
                 f">>>>Epoch {epoch:04d}: Train Acc {train_acc:.4f}, Loss {loss / len(self.train_ids):.4f}, Test correct {test_correct}, "
                 f"Test unsure {test_unsure}, Test Acc {test_acc:.4f}")
@@ -112,6 +115,14 @@ class Trainer:
 
         return total_correct, total_unsure
 
+    def save_model(self):
+        state = {
+            'model': self.model.state_dict(),
+            'optimizer': self.optimizer.state_dict()
+        }
+
+        torch.save(state, self.save_path / f"{self.params.species}-{self.params.tissue}.pt")
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -120,6 +131,8 @@ if __name__ == '__main__':
                         help="dropout probability")
     parser.add_argument("--gpu", type=int, default=2,
                         help="GPU id, -1 for cpu")
+    parser.add_argument("--filetype", default='csv', type=str, choices=['csv', 'gz'],
+                        help='data file type, csv or gz')
     parser.add_argument("--lr", type=float, default=1e-3,
                         help="learning rate")
     parser.add_argument("--weight_decay", type=float, default=5e-4,
@@ -132,13 +145,17 @@ if __name__ == '__main__':
                         help="number of hidden gcn units")
     parser.add_argument("--n_layers", type=int, default=1,
                         help="number of hidden gcn layers")
-    parser.add_argument("--threshold", type=float, default=0)
-    parser.add_argument("--num_neighbors", type=int, default=0)
-    parser.add_argument("--exclude_rate", type=float, default=0.005)
+    parser.add_argument("--threshold", type=float, default=0,
+                        help="the threshold to connect edges between cells and genes")
+    parser.add_argument("--num_neighbors", type=int, default=0,
+                        help="number of neighbors to sample in message passing process. 0 means all neighbors")
+    parser.add_argument("--exclude_rate", type=float, default=0.005,
+                        help="exclude some cells less than this rate.")
     parser.add_argument("--species", default='mouse', type=str)
     parser.add_argument("--tissue", required=True, type=str)
     parser.add_argument("--batch_size", type=int, default=500)
-    parser.add_argument("--unsure_rate", type=float, default=2.)
+    parser.add_argument("--unsure_rate", type=float, default=2.,
+                        help="the threshold to predict unsure cell")
     parser.add_argument("--test_rate", type=float, default=0.2)
 
     params = parser.parse_args()

@@ -4,3 +4,4 @@ numpy==1.17.2
 pandas==0.25.1
 dgl==0.4.3.post2
 scikit_learn==0.22.2.post1
+xlrd==1.2.0

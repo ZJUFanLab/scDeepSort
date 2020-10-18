@@ -53,6 +53,17 @@ def get_id_2_label_and_label_statistics(species_data_path, species, tissue):
     return id2label, label_statistics
 
 
+def save_statistics(statistics_path, id2label, id2gene, tissue):
+    gene_path = statistics_path / f'{tissue}_genes.txt'
+    label_path = statistics_path / f'{tissue}_cell_type.txt'
+    with open(gene_path, 'w', encoding='utf-8') as f:
+        for gene in id2gene:
+            f.write(gene + '\r\n')
+    with open(label_path, 'w', encoding='utf-8') as f:
+        for label in id2label:
+            f.write(label + '\r\n')
+
+
 def load_data_internal(params):
     random_seed = params.random_seed
     dense_dim = params.dense_dim
@@ -62,8 +73,16 @@ def load_data_internal(params):
 
     proj_path = Path(__file__).parent.resolve().parent.resolve()
     species_data_path = proj_path / 'train' / species
+    graph_path = proj_path / 'pretrained' / species / 'graphs'
+    statistics_path = proj_path / 'pretrained' / species / 'statistics'
+
     if not species_data_path.exists():
         raise NotImplementedError
+
+    if not statistics_path.exists():
+        statistics_path.mkdir(parents=True)
+    if not graph_path.exists():
+        graph_path.mkdir(parents=True)
 
     # generate gene statistics file
     id2gene = get_id_2_gene(species_data_path, species, tissue)
@@ -79,6 +98,7 @@ def load_data_internal(params):
     # prepare unified labels
     num_labels = len(id2label)
     label2id = {label: idx for idx, label in enumerate(id2label)}
+    save_statistics(statistics_path, id2label, id2gene, tissue)
     print(f"The build graph contains {num_genes} genes with {num_labels} labels supported.")
 
     graph = dgl.DGLGraph()
@@ -109,7 +129,15 @@ def load_data_internal(params):
         all_labels += cell2type['id'].tolist()
 
         # load data file then update graph
-        df = pd.read_csv(data_file, index_col=0)  # (gene, cell)
+        # df = pd.read_csv(data_file, index_col=0)  # (gene, cell)
+
+        if params.filetype == 'csv':
+            df = pd.read_csv(data_path, index_col=0)  # (gene, cell)
+        elif params.filetype == 'gz':
+            df = pd.read_csv(data_path, compression='gzip', index_col=0)
+        else:
+            print(f'Not supported type for {data_path}. Please verify your data file')
+
         df = df.transpose(copy=True)  # (cell, gene)
         # filter out cells not in label-text
         df = df.iloc[filter_cell]
@@ -144,6 +172,8 @@ def load_data_internal(params):
         print(f'#Nodes in Graph: {graph.number_of_nodes()}, #Edges: {graph.number_of_edges()}.')
 
     assert len(all_labels) == num_cells
+
+    save_npz(graph_path / f'{params.species}_{tissue}_data', vstack(matrices))
 
     # 2. create features
     sparse_feat = vstack(matrices).toarray()  # cell-wise  (cell, gene)

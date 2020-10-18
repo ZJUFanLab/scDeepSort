@@ -8,7 +8,6 @@ from scipy.sparse import csr_matrix, vstack, load_npz
 from sklearn.decomposition import PCA
 from pathlib import Path
 import numpy as np
-import h5py
 
 
 def get_map_dict(map_path: Path, tissue):
@@ -97,6 +96,7 @@ def load_data(params):
     test_index_dict = dict()  # test feature indices in all features
     test_mask_dict = dict()
     test_nid_dict = dict()
+    test_cell_origin_id_dict = dict()
 
     ids = torch.arange(num_genes, dtype=torch.int32, device=device).unsqueeze(-1)
 
@@ -152,7 +152,8 @@ def load_data(params):
             pass
         else:
             print(f'Not supported type for {data_path}. Please verify your data file')
-        
+
+        test_cell_origin_id_dict[num] = list(df.columns)
         df = df.transpose(copy=True)  # (cell, gene)
 
         df = df.rename(columns=gene2id)
@@ -224,13 +225,15 @@ def load_data(params):
             'graph': test_graph_dict,
             'label': test_label_dict,
             'nid': test_nid_dict,
-            'mask': test_mask_dict
+            'mask': test_mask_dict,
+            'origin_id': test_cell_origin_id_dict
         }
         return total_cell, num_genes, num_labels, np.array(id2label, dtype=np.str), test_dict, map_dict
     else:
         test_dict = {
             'graph': test_graph_dict,
             'nid': test_nid_dict,
-            'mask': test_mask_dict
+            'mask': test_mask_dict,
+            'origin_id': test_cell_origin_id_dict
         }
         return total_cell, num_genes, num_labels, np.array(id2label, dtype=np.str), test_dict
