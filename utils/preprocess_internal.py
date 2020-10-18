@@ -88,7 +88,7 @@ def load_data_internal(params):
         graph_path.mkdir(parents=True)
 
     # generate gene statistics file
-    id2gene = get_id_2_gene(species_data_path, species, tissue)
+    id2gene = get_id_2_gene(species_data_path, species, tissue, filetype=params.filetype)
     # generate cell label statistics file
     id2label, label_statistics = get_id_2_label_and_label_statistics(species_data_path, species, tissue)
     total_cell = sum(label_statistics.values())
