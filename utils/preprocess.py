@@ -149,8 +149,6 @@ def load_data(params):
             df = pd.read_csv(data_path, index_col=0)  # (gene, cell)
         elif params.filetype == 'gz':
             df = pd.read_csv(data_path, compression='gzip', index_col=0)
-        elif params.filetype in ['h5', 'hdf5']:
-            pass
         else:
             print(f'Not supported type for {data_path}. Please verify your data file')
 
