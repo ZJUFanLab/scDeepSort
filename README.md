@@ -40,6 +40,7 @@ After executing the above steps, the final scDeepSort tree should look like this
         |- map.xlsx
     |- mouse
         |- map.xlsx
+    |- celltype2subtype.xlsx
  |- models
     |- __init__.py
     |- gnn.py
