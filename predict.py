@@ -156,7 +156,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--gpu", type=int, default=-1,
                         help="GPU id, -1 for cpu")
-    parser.add_argument("--filetype", default='csv', type=str, choices=['csv', 'gz', 'h5', 'hdf5'])
+    parser.add_argument("--filetype", default='csv', type=str, choices=['csv', 'gz'])
     parser.add_argument("--test_dataset", nargs="+", required=True, type=int,
                         help="list of dataset id")
     parser.add_argument("--species", default='mouse', type=str, choices=['human', 'mouse'])
