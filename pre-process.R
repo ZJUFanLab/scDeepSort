@@ -1,10 +1,11 @@
 library(Seurat)
 library(R.utils)
-# example_data has 199 mouse testis spermatocyte cells
+# example_data is Seurat object after log-normalization having 199 mouse testis spermatocyte cells
 mouse_Testis199<- readRDS('R/example_data.rds')
+mouse_Testis199<- mouse_Testis199[['RNA']]@data
 geneinfo<- readRDS('R/geneinfo.rds')
 
-# Revising gene symbols
+# revising gene symbols
 genename<- rownames(mouse_Testis199)
 genename1<- genename[genename %in% geneinfo$Symbol]
 genename2<- genename[!genename %in% geneinfo$Symbol]
@@ -29,10 +30,11 @@ rownames(mouse_Testis199)<- genedata$new_name
 all(rownames(mouse_Testis199) == genedata$new_name)
 all(rownames(mouse_Testis199) %in% geneinfo$Symbol)
 
-## log-normalization
-mouse_Testis199<- CreateSeuratObject(counts = mouse_Testis199)
-mouse_Testis199<- NormalizeData(object = mouse_Testis199)
-mouse_Testis199<- mouse_Testis199[['RNA']]@data
+# for log-normalization, please execute the following command
+# mouse_Testis199<- CreateSeuratObject(counts = mouse_Testis199)
+# mouse_Testis199<- NormalizeData(object = mouse_Testis199)
+# mouse_Testis199<- mouse_Testis199[['RNA']]@data
+
 mouse_Testis199<- as.matrix(mouse_Testis199)
 write.csv(mouse_Testis199,file = 'test/mouse/mouse_Testis199_data.csv')
 gzip('test/mouse/mouse_Testis199_data.csv','test/mouse/mouse_Testis199_data.gz')
