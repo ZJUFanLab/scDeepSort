@@ -1,17 +1,7 @@
-Get Started
+Getting Started
 ==================
 
-This is a quick start guide for you to try out deep forest. The full script is available at :ref:`script`.
-
-Installation
-------------
-
-The package is available on GitHub.
-
-.. code-block:: bash
-
-    $ git clone https://github.com/ZJUFanLab/scDeepSort
-    $ python setup.py
+This is a quick start guide for you to try out scDeepSort. The full script is available at :ref:`script`.
 
 Load Data
 ---------
