@@ -10,7 +10,7 @@ The package is then available using:
 
 .. code-block:: bash
 
-    $ pip install xxx.tar.gz
+    $ pip install scdeepsort-1.0.tar.gz
 
 The package is used a few package dependencies which will be handled automatically. It is recommended to use the package environment from `Anaconda <https://www.anaconda.com/>`__ since it already installs all required packages.
 
