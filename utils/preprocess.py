@@ -176,7 +176,7 @@ def load_data(params):
 
         # test_nodes_index_dict[num] = list(range(graph.number_of_nodes(), graph.number_of_nodes() + len(df)))
         ids = torch.tensor([-1] * len(df), device=device, dtype=torch.int32).unsqueeze(-1)
-        test_index_dict[num] = list(range(support_num + test_num, support_num + test_num + len(df)))
+        test_index_dict[num] = list(range(num_genes + support_num + test_num, num_genes + support_num + test_num + len(df)))
         test_nid_dict[num] = list(
             range(test_graph_dict[num].number_of_nodes(), test_graph_dict[num].number_of_nodes() + len(df)))
         test_num += len(df)
