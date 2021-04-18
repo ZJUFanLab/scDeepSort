@@ -4,15 +4,32 @@ Installation Guide
 Stable Version
 --------------
 
-The stable version is compressed into a single file. Please download `the tar file<https://github.com/ZJUFanLab/scDeepSort/releases>` from the GitHub release page.
+scDeepSort requires Python version 3.7, 3.8 or 3.9. 
+
+For the convenience of users, we provide CPU and CUDA builds in different compressed files. These builds share the same package name.
+
+For users with GPU support, please first check out your CUDA version by running the following command:
+
+.. code-block:: bash
+    $ nvcc --version | grep release
+
+For users with a CUDA 10.2 build, please download `scDeepSort-v1.0-cu102.tar.gz <https://github.com/ZJUFanLab/scDeepSort/releases>` from our GitHub `release page <https://github.com/ZJUFanLab/scDeepSort/releases>`.
 
 The package is then available using:
 
 .. code-block:: bash
 
-    $ pip install scdeepsort-1.0.tar.gz
+    $ pip install scDeepSort-v1.0-cu102.tar.gz
 
 The package is used a few package dependencies which will be handled automatically. It is recommended to use the package environment from `Anaconda <https://www.anaconda.com/>`__ since it already installs all required packages.
 
 Notice that only the 64-bit Linux are officially supported.
+
+Quick Start
+------------
+
+.. code-block:: bash
+    import deepsort
+    deepsort = scDeepSort()
+    deepsort.fit()
 
