@@ -1,3 +1,6 @@
+API Reference
+=============
+
 Below is the class and function reference for scDeepSort. Notice that the package is under active development, and some features may not be stable yet.
 
 DeepSortPredictor
@@ -25,6 +28,19 @@ DeepSortPredictor
 - **input_file**: The file path for test dataset.
 - **save_path**: The destination for saving predictions.
 
+Example
+*******
+.. code-block:: python
+
+    from deepsort import DeepSortPredictor
+    # define the model
+    model = DeepSortPredictor(species='human',
+                              tissue='Brain')
+    # use the trained model to predict
+    test_files = ['/path/to/human_brain_test_data_1.csv', '/path/to/human_brain_test_data_2.csv']
+    for test_file in test_files:
+        model.predict(test_file, save_path='results', model_path='model_save_path')
+        
 DeepSortClassifier
 ------------------
 
@@ -88,4 +104,28 @@ DeepSortClassifier
 - **input_file**: The file path for test dataset.
 - **model_path**: The path for loading saved models.
 - **save_path**: The destination for saving predictions.
+
+Example
+*******
+
+.. code-block:: python
+
+    from deepsort import DeepSortClassifier
+    # define the model
+    model = DeepSortClassifier(species='human',
+                               tissue='Brain',
+                               dense_dim=50,
+                               hidden_dim=20,
+                               gpu_id=0,
+                               n_layers=2,
+                               random_seed=1,
+                               n_epochs=20)
+    train_files = [('/path/to/human_brain_data_1.csv', '/path/to/human_brain_celltype_1.csv'),
+                   ('/path/to/human_brain_data_2.csv', '/path/to/human_brain_celltype_2.csv')]
+    test_files = ['/path/to/human_brain_test_data_1.csv', '/path/to/human_brain_test_data_2.csv']
+    # fit the model
+    model.fit(train_files, save_path='model_save_path')
+    # use the saved model to predict
+    for test_file in test_files:
+        model.predict(test_file, save_path='results', model_path='model_save_path')
 

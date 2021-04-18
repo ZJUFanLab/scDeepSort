@@ -42,7 +42,7 @@ scDeepSort will conduct internal check and transformation on the input data acco
 
 Cell Type File
 --------------
-We assume csv format for all cell type files.
+We assume csv format for all cell type files. The csv file should have three columns including index columns, cell name and its corresponding cell type. It is only used in ``DeepSortClassifier.fit``.
 
 
 .. code-block:: python
