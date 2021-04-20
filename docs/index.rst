@@ -32,5 +32,4 @@ Reference
    API Reference <api>
    About us <about>
 
-Acknowledgement
 ---------------
