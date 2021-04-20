@@ -51,11 +51,8 @@ Below is the full script on using scDeepSort for classification on a demo datase
 
 .. code-block:: python
 
-    from sklearn.datasets import load_digits
-    from sklearn.model_selection import train_test_split
-    from sklearn.metrics import accuracy_score
-
-
+    from deepsort import DeepSortClassifier
+    # define the model
     model = DeepSortClassifier(species='human',
                                tissue='Brain',
                                dense_dim=50,
@@ -63,5 +60,18 @@ Below is the full script on using scDeepSort for classification on a demo datase
                                gpu_id=0,
                                n_layers=2,
                                random_seed=1,
-                               n_epochs=10)
+                               n_epochs=20)
+    train_files = [('/path/to/human_brain_data_1.csv', '/path/to/human_brain_celltype_1.csv'),
+                   ('/path/to/human_brain_data_2.csv', '/path/to/human_brain_celltype_2.csv')]
+    test_files = ['/path/to/human_brain_test_data_1.csv', '/path/to/human_brain_test_data_2.csv']
+    # fit the model
+    model.fit(train_files, save_path='model_save_path')
+    # use the saved model to predict
+    for test_file in test_files:
+        model.predict(test_file, save_path='results', model_path='model_save_path')
+
+Our ``DeepSortClassifier`` model takes a list of tuples of file paths as inputs to fit on multiple datasets.
+
+Users are required to prepare the data file and the corresponding cell type file for training and testing as expected in `Input Requirement <./input_requirement.html>`_.
+
 
