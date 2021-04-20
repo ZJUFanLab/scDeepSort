@@ -9,13 +9,13 @@ To addresses this challenge, we developed a pre-trained cell-type annotation met
 
 # Install
 
-[![scipy-1.3.1](https://img.shields.io/badge/scipy-1.3.1-yellowgreen)](https://github.com/scipy/scipy) [![torch-1.4.0](https://img.shields.io/badge/torch-1.4.0-orange)](https://github.com/pytorch/pytorch) [![numpy-1.17.2](https://img.shields.io/badge/numpy-1.17.2-red)](https://github.com/numpy/numpy) [![pandas-0.25.1](https://img.shields.io/badge/pandas-0.25.1-lightgrey)](https://github.com/pandas-dev/pandas) [![dgl-0.4.3](https://img.shields.io/badge/dgl-0.4.3-blue)](https://github.com/dmlc/dgl) [![scikit__learn-0.22.2](https://img.shields.io/badge/scikit__learn-0.22.2-green)](https://github.com/scikit-learn/scikit-learn) [![xlrd-1.2.0](https://img.shields.io/badge/xlrd-1.2.0-yellow)](https://github.com/python-excel/xlrd)
+[![scipy-1.3.1](https://img.shields.io/badge/scipy-1.3.1-yellowgreen)](https://github.com/scipy/scipy) [![torch-1.6.0](https://img.shields.io/badge/torch-1.6.0-orange)](https://github.com/pytorch/pytorch) [![numpy-1.17.2](https://img.shields.io/badge/numpy-1.17.2-red)](https://github.com/numpy/numpy) [![pandas-0.25.1](https://img.shields.io/badge/pandas-0.25.1-lightgrey)](https://github.com/pandas-dev/pandas) [![dgl-0.4.3](https://img.shields.io/badge/dgl-0.4.3-blue)](https://github.com/dmlc/dgl) [![scikit__learn-0.22.2](https://img.shields.io/badge/scikit__learn-0.22.2-green)](https://github.com/scikit-learn/scikit-learn) [![xlrd-1.2.0](https://img.shields.io/badge/xlrd-1.2.0-yellow)](https://github.com/python-excel/xlrd)
 
-Download [`scDeepSort-v1.0-cu102.tar.gz`](https://github.com/ZJUFanLab/scDeepSort/releases) from the [release](https://github.com/ZJUFanLab/scDeepSort/releases) page and execute the following command:
+We provide CPU and CUDA builds, If you want to install DeepSort with a CPU build, please download [`scDeepSort-v1.0-cpu.tar.gz`](https://github.com/ZJUFanLab/scDeepSort/releases) from the [release](https://github.com/ZJUFanLab/scDeepSort/releases) page and execute the following command:
 ```
-pip install scDeepSort-v1.0-cu102.tar.gz
+pip install scDeepSort-v1.0-cpu.tar.gz
 ```
-
+For more details, see [installation guide](https://scdeepsort.readthedocs.io/en/master/installation.html) in the document.
 # Usage
 
 The test single-cell transcriptomics csv data file should be pre-processed by first revising gene symbols according to [NCBI Gene database](https://www.ncbi.nlm.nih.gov/gene) updated on Jan. 10, 2020, wherein unmatched genes and duplicated genes will be removed. Then the data should be normalized with the defalut `LogNormalize` method in `Seurat` (R package), detailed in [`pre-process.R`](https://github.com/ZJUFanLab/scDeepSort/blob/dev/pre-process.R).
@@ -27,4 +27,4 @@ The test single-cell transcriptomics csv data file should be pre-processed by fi
 Please refer to the [document](https://scdeepsort.readthedocs.io/en/master/index.html) of scDeepSort for detailed guidence using scDeepSort as a python package. 
 
 # About
-scDeepSort manuscript is under major revision. Should you have any questions, please contact Xin Shao at xin_shao@zju.edu.cn, Haihong Yang at capriceyhh@zju.edu.cn, or Xiang Zhuang at 3160105000@zju.edu.cn
+scDeepSort manuscript is under major revision. Should you have any questions, please contact Xin Shao at xin_shao@zju.edu.cn, Haihong Yang at capriceyhh@zju.edu.cn, or Xiang Zhuang at zhuangxiang@zju.edu.cn
