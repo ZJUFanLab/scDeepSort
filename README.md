@@ -18,97 +18,13 @@ pip install scDeepSort-v1.0-cu102.tar.gz
 
 # Usage
 
-The test single-cell transcriptomics csv data file should be pre-processed by first revising gene symbols according to [NCBI Gene database](https://www.ncbi.nlm.nih.gov/gene) updated on Jan. 10, 2020, wherein unmatched genes and duplicated genes will be removed. Then the data should be normalized with the defalut `LogNormalize` method in `Seurat` (R package), detailed in [`pre-process.R`](https://github.com/ZJUFanLab/scDeepSort/blob/dev/pre-process.R), wherein the column represents each cell and the row represent each gene for final test data, as shown below. 
+The test single-cell transcriptomics csv data file should be pre-processed by first revising gene symbols according to [NCBI Gene database](https://www.ncbi.nlm.nih.gov/gene) updated on Jan. 10, 2020, wherein unmatched genes and duplicated genes will be removed. Then the data should be normalized with the defalut `LogNormalize` method in `Seurat` (R package), detailed in [`pre-process.R`](https://github.com/ZJUFanLab/scDeepSort/blob/dev/pre-process.R).
 
+- Predict using pre-trained models [`DeepSortPredictor`](https://scdeepsort.readthedocs.io/en/master/api.html#deepsortpredictor)
 
-      |          |Cell 1|Cell 2|Cell 3|...  |
-      | :---:    |:---: | :---:| :---:|:---:|
-      |__Gene 1__|    0 | 2.4  |  5.0 |...  |
-      |__Gene 2__| 0.8  | 1.1  |  4.3 |...  |
-      |__Gene 3__|1.8   |    0 |  0   |...  |
-      |  ...     |  ... |  ... | ...  |...  |
+- Train your own model and predict [`DeepSortClassifier`](https://scdeepsort.readthedocs.io/en/master/api.html#deepsortclassifier)
 
-
-## Predict using pre-trained models
-
-1. The file name of test data should be named in this format: **species_TissueNumber_data.csv**. For example, `human_Pancreas11_data.csv` is a data file containing 11 human pancreas cells.
-2. The test single-cell transcriptomics csv data file should be pre-processed by first revising gene symbols according to [NCBI Gene database](https://www.ncbi.nlm.nih.gov/gene) updated on Jan. 10, 2020, wherein unmatched genes and duplicated genes will be removed. Then the data should be normalized with the defalut `LogNormalize` method in `Seurat` (R package), detailed in [`pre-process.R`](https://github.com/ZJUFanLab/scDeepSort/blob/dev/pre-process.R), wherein the column represents each cell and the row represent each gene for final test data, as shown below. 
-
-      |          |Cell 1|Cell 2|Cell 3|...  |
-      | :---:    |:---: | :---:| :---:|:---:|
-      |__Gene 1__|    0 | 2.4  |  5.0 |...  |
-      |__Gene 2__| 0.8  | 1.1  |  4.3 |...  |
-      |__Gene 3__|1.8   |    0 |  0   |...  |
-      |  ...     |  ... |  ... | ...  |...  |
-
-3. All the test data should be included under the `test` directory. Human datasets should be under `./test/human` and mouse datasets should be under `./test/mouse`
-
-### Evaluate
-Use `--evaluate` to reproduce the results as shown in our paper. For example,
-to evaluate the data `mouse_Testis199_data.csv`, you should execute the following command:
-
-```
-python predict.py --species human --tissue Testis --test_dataset 199 --gpu -1 --evaluate --filetype gz --unsure_rate 2
-```
-
-- `--species` The species of cells, `human` or `mouse`.
-
-- `--tissue` The tissue of cells. See [wiki page](https://github.com/ZJUFanLab/scDeepSort/wiki)
-
-- `--test_dataset` The number of cells in the test data.
-
-- `--gpu` Specify the GPU to use, `0` for gpu,`-1` for cpu.
-
-- `--filetype` The format of datafile, `csv` for `.csv` files and `gz` for `.gz` files. See [`pre-process.R`](https://github.com/ZJUFanLab/scDeepSort/blob/dev/pre-process.R)
-
-- `--unsure_rate` The threshold to define the unsure type, default is 2. Set it as 0 to exclude the unsure type.
-
-__Output:__ the output named as `species_Tissue_Number.csv` will be under the automatically generated `result` directory, which contains four columns, the first is the cell id, the second is the original cell type, the third is the predicted main type, the fourth is the predicted subtype if applicable.
-
-__Note:__ to evaluate all testing datasets in our paper, please download them in [release page](https://github.com/ZJUFanLab/DeepSort/releases)
-
-### Test
-Use `--test` to test your own datasets. For example,
-to test the data `human_Pancreas11_data.csv`, you should execute the following command:
-
-```
-python predict.py --species human --tissue Pancreas --test_dataset 11 --gpu -1 --test --filetype csv --unsure_rate 2
-```
-- `--species` The species of cells, `human` or `mouse`.
-
-- `--tissue` The tissue of cells. See [wiki page](https://github.com/ZJUFanLab/scDeepSort/wiki)
-
-- `--test_dataset` The number of cells in the test data.
-
-- `--gpu` Specify the GPU to use, `0` for gpu, `-1` for cpu.
-
-- `--filetype` The format of datafile, `csv` for `.csv` files and `gz` for `.gz` files. See [`pre-process.R`](https://github.com/ZJUFanLab/scDeepSort/blob/dev/pre-process.R)
-
-- `--unsure_rate` The threshold to define the unsure type, default is 2. Set it as 0 to exclude the unsure type.
-
-__Output:__ the output named as `species_Tissue_Number.csv` will be under the automatically generated `result` directory, which contains three columns, the first is the cell id, the second is the predicted main type, the third is the predicted subtype if applicable.
-
-## Train your own model and predict
-To train your own model, you should prepare two files, i.e., a data file as descrived above, and a cell annotation file under the `./train` directory as the example files. Then execute the following command:
-
-```
-python train.py --species human --tissue Adipose --gpu -1 --filetype gz
-```
-
-```
-python train.py --species mouse --tissue Muscle --gpu -1 --filetype gz
-```
-
-- `--species` The species of cells, `human` or `mouse`.
-
-- `--tissue` The tissue of cells.
-
-- `--gpu` Specify the GPU to use, `0` for gpu, `-1` for cpu.
-
-- `--filetype` The format of datafile, `csv` for `.csv` files and `gz` for `.gz` files. See `pre-process.R`
-
-__Output:__ the trained model will be under the `pretrained` directory, which can be used to test new datasets on the same tissue using `predict.py` as described above. 
+Please refer to the [document](https://scdeepsort.readthedocs.io/en/master/index.html) of scDeepSort for detailed guidence using scDeepSort as a python package. 
 
 # About
-
-scDeepSort manuscript is under major revision. For more information, please refer to the preprint in [bioRxiv 2020.05.13.094953.](https://www.biorxiv.org/content/10.1101/2020.05.13.094953v1). Should you have any questions, please contact Xin Shao at xin_shao@zju.edu.cn, Haihong Yang at capriceyhh@zju.edu.cn, or Xiang Zhuang at 3160105000@zju.edu.cn
+scDeepSort manuscript is under major revision. Should you have any questions, please contact Xin Shao at xin_shao@zju.edu.cn, Haihong Yang at capriceyhh@zju.edu.cn, or Xiang Zhuang at 3160105000@zju.edu.cn
