@@ -97,13 +97,13 @@ DeepSortClassifier
     # Class Method
     DeepSortClassifier.predict(input_file, 
                                model_path, 
-                               save_path,
+                               save_path=None,
                                unsure_rate=2., 
                                file_type='csv')  -> pandas.DataFrame
 
 - **input_file**: The file path for test dataset.
 - **model_path**: The path for loading saved models.
-- **save_path**: The destination for saving predictions.
+- **save_path**: The destination for saving predictions. Save results to disk if path provided.
 
 Example
 *******

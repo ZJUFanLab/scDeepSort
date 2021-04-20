@@ -30,6 +30,7 @@ Quick Start
 ------------
 
 To verify your installation, you can run the following test code.
+
 .. code-block:: python
 
     import deepsort

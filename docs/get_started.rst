@@ -10,10 +10,7 @@ This is a quick start guide for you to try out scDeepSort. The full script is av
 Define the Model
 ----------------
 
-scDeepSort provides unified APIs on
-
-- **internel classification**: train and test on the same tissues and,
-- **externel classification**: train on one tissue and test on the other.
+scDeepSort provides unified APIs on evaluating different datasets with pre-trained models.
 
 For the demo on cell type annotating, the corresponding model is ``DeepSortPredictor``:
 
@@ -21,6 +18,8 @@ For the demo on cell type annotating, the corresponding model is ``DeepSortPredi
 
     from deepsort import DeepSortPredictor
     model = DeepSortPredictor(species='human', tissue='Spleen')
+
+Currently we support cell type annotation on human and mouse datasets, with available tissues listed in GitHub Wiki Page (`human <https://github.com/ZJUFanLab/scDeepSort/wiki#human-tissues>`_ and `mouse <https://github.com/ZJUFanLab/scDeepSort/wiki/Mouse_tissues>`_). Note that the first letter of tissues should be in upper case.
 
 Prepare Data
 ------------
@@ -30,16 +29,12 @@ Please refer to `Input Requirement <./input_requirement.html>`_
 Evaluate
 --------
 
-Once the datasets prepared, users can predict the corresponding cell type (and subtype if exists) for cells. Our predict function supports processing multiple files in one pass as following:
+Once the datasets prepared, users can predict the corresponding cell type (and subtype if exists) for cells. Our predict function supports processing single file in one pass as following:
 
 .. code-block:: python
 
-    test_files = ['test/human/human_Spleen11081_data.csv',
-                  'test/human/human_Spleen14848_data.csv',
-                  'test/human/human_Spleen9887_data.csv',
-                  'test/human/human_Spleen16286_data.csv',
-                  'test/human/human_Spleen18513_data.csv']
-    predictor.predict(input_files=input_files, save_path='results')
+    test_file = 'test/human/human_Spleen11081_data.csv'
+    predictor.predict(test_file, save_path='results')
 
 This method saves results to specific path if provided as keyword argument.
 
