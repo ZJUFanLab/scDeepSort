@@ -26,7 +26,7 @@ DeepSortPredictor
                               save_path=None) -> pandas.DataFrame
 
 - **input_file**: The file path for test dataset.
-- **save_path**: The destination for saving predictions.
+- **save_path**: The destination for saving predictions. Save results to disk if path provided.
 
 Example
 *******
@@ -87,7 +87,7 @@ DeepSortClassifier
 
     # Class Method
     DeepSortClassifier.fit(files, 
-                           save_path)
+                           save_path=None)
 
 - **files**: The file path for training datasets. We assume ``files`` in the form of ``list of (data_file, celltype_file)``.
 - **save_path**: The destination for saving models.
@@ -103,7 +103,7 @@ DeepSortClassifier
 
 - **input_file**: The file path for test dataset.
 - **model_path**: The path for loading saved models.
-- **save_path**: The destination for saving predictions.
+- **save_path**: The destination for saving predictions. Save results to disk if path provided.
 
 Example
 *******
