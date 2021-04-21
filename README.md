@@ -1,4 +1,4 @@
-# scDeepSort
+# [scDeepSort](https://scdeepsort.readthedocs.io/en/master/index.html)
 
 [![python 3.7](https://img.shields.io/badge/python-3.7-brightgreen)](https://www.python.org/) [![R >3.6](https://img.shields.io/badge/R-%3E3.6-blue)](https://www.r-project.org/) 
 
