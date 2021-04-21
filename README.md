@@ -1,6 +1,7 @@
 # scDeepSort
 
 [![python 3.7](https://img.shields.io/badge/python-3.7-brightgreen)](https://www.python.org/) [![R >3.6](https://img.shields.io/badge/R-%3E3.6-blue)](https://www.r-project.org/) 
+
 Document detailed in https://scdeepsort.readthedocs.io/en/master/index.html
 ### Cell-type Annotation for Single-cell Transcriptomics using Deep Learning with a Weighted Graph Neural Network
 Recent advance in single-cell RNA sequencing (scRNA-seq) has enabled large-scale transcriptional characterization of thousands of cells in multiple complex tissues, in which accurate cell type identification becomes the prerequisite and vital step for scRNA-seq studies. 
