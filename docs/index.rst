@@ -15,8 +15,8 @@ Reference
 .. code-block:: latex
 
     @article{shao2020reference,
-      title={Reference-free Cell-type Annotation for Single-cell Transcriptomics using Deep Learning with a Weighted Graph Neural Network},
-      author={Shao, Xin and Yang, Haihong and Zhuang, Xiang and Liao, Jie and Yang, Yueren and Yang, Penghui and Cheng, Junyun and Lu, Xiaoyan and Chen, Huajun and Fan, Xiaohui},
+      title={scDeepSort: a pre-trained cell-type annotation method for single-cell transcriptomics using deep learning with a weighted graph neural network},
+      author={Shao, Xin and Yang, Haihong and Zhuang, Xiang and Liao, Jie and Yang, Penghui and Cheng, Junyun and Lu, Xiaoyan and Chen, Huajun and Fan, Xiaohui},
       journal={bioRxiv},
       year={2020},
       publisher={Cold Spring Harbor Laboratory}
