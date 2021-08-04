@@ -28,7 +28,7 @@ The test single-cell transcriptomics csv data file should be pre-processed by fi
 Please refer to the [document](https://scdeepsort.readthedocs.io/en/master/index.html) of scDeepSort for detailed guidence using scDeepSort as a python package. 
 
 # Note
-- All available cell types of each tissues in our pre-trained models can be found in the [wiki page](https://github.com/ZJUFanLab/scDeepSort/wiki) of [`Human tissues and cell types`](https://github.com/ZJUFanLab/scDeepSort/wiki/Human-tissues-and-cell-types) and [`Mouse tissues and cell types`](https://github.com/ZJUFanLab/scDeepSort/wiki/Mouse-tissues-and-cell-types)
+All available cell types of each tissue in our pre-trained models can be found in the [wiki page](https://github.com/ZJUFanLab/scDeepSort/wiki) of [`Human tissues and cell types`](https://github.com/ZJUFanLab/scDeepSort/wiki/Human-tissues-and-cell-types) and [`Mouse tissues and cell types`](https://github.com/ZJUFanLab/scDeepSort/wiki/Mouse-tissues-and-cell-types)
 
 
 # Data availability 
