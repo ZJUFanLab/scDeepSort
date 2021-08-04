@@ -74,7 +74,3 @@ write.csv(mouse_Testis199,file = 'test/mouse/mouse_Testis199_data.csv')
 gzip('test/mouse/mouse_Testis199_data.csv','test/mouse/mouse_Testis199_data.gz')
 
 # mouse_Testis199_data.csv or mouse_Testis199_data.gz can be used for running scDeepSort
-
-
-
-
