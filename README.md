@@ -27,12 +27,14 @@ The test single-cell transcriptomics csv data file should be pre-processed by fi
 
 Please refer to the [document](https://scdeepsort.readthedocs.io/en/master/index.html) of scDeepSort for detailed guidence using scDeepSort as a python package. 
 
+# Note
+- All available cell types of each tissues in our pre-trained models can be found in the [wiki page](https://github.com/ZJUFanLab/scDeepSort/wiki) of [`Human tissues and cell types`](https://github.com/ZJUFanLab/scDeepSort/wiki/Human-tissues-and-cell-types) and [`Mouse tissues and cell types`](https://github.com/ZJUFanLab/scDeepSort/wiki/Mouse-tissues-and-cell-types)
+
+
 # Data availability 
 [![scDeepSort-Python](https://img.shields.io/badge/scDeepSort-Python-brightgreen)](https://github.com/ZJUFanLab/scDeepSort/releases/tag/scDeepSort) [![Pre-processed data](https://img.shields.io/badge/Pre--processed-Data-blue)](https://github.com/ZJUFanLab/scDeepSort/releases/tag/Pre_processed_data)
 
 All pre-processed data are available in the form of readily-for-analysis for researchers to develop new methods. Please refer to the release page called [`Pre-processed data`](https://github.com/ZJUFanLab/scDeepSort/releases/tag/Pre_processed_data)
-
-
 
 # About
 scDeepSort manuscript is under major revision. Should you have any questions, please contact Xin Shao at xin_shao@zju.edu.cn, Haihong Yang at capriceyhh@zju.edu.cn, or Xiang Zhuang at zhuangxiang@zju.edu.cn
