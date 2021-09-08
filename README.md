@@ -36,5 +36,7 @@ All available cell types of each tissue in our pre-trained models can be found i
 
 All pre-processed data are available in the form of readily-for-analysis for researchers to develop new methods. Please refer to the release page called [`Pre-processed data`](https://github.com/ZJUFanLab/scDeepSort/releases/tag/Pre_processed_data)
 
-# About
-scDeepSort manuscript is under major revision. Should you have any questions, please contact Xin Shao at xin_shao@zju.edu.cn, Haihong Yang at capriceyhh@zju.edu.cn, or Xiang Zhuang at zhuangxiang@zju.edu.cn
+# Cite
+Shao et al., scDeepSort: a pre-trained cell-type annotation method
+for single-cell transcriptomics using deep learning with a weighted graph neural network. Nucleic Acids Research, 2021. [https://doi.org/10.1093/nar/gkab775](https://doi.org/10.1093/nar/gkab775)
+Should you have any questions, please contact Xin Shao at xin_shao@zju.edu.cn, Haihong Yang at capriceyhh@zju.edu.cn, or Xiang Zhuang at zhuangxiang@zju.edu.cn
