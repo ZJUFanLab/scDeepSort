@@ -38,6 +38,6 @@ All pre-processed data are available in the form of readily-for-analysis for res
 
 # Cite
 Shao et al., scDeepSort: a pre-trained cell-type annotation method
-for single-cell transcriptomics using deep learning with a weighted graph neural network. Nucleic Acids Research, 2021. [https://doi.org/10.1093/nar/gkab775](https://doi.org/10.1093/nar/gkab775) 
+for single-cell transcriptomics using deep learning with a weighted graph neural network. Nucleic Acids Research, 2021. [PMID:34500471](https://pubmed.ncbi.nlm.nih.gov/34500471/)
 
 Should you have any questions, please contact Xin Shao at xin_shao@zju.edu.cn, Haihong Yang at capriceyhh@zju.edu.cn, or Xiang Zhuang at zhuangxiang@zju.edu.cn
