@@ -29,8 +29,8 @@ Please refer to the [document](https://scdeepsort.readthedocs.io/en/master/index
 
 # Note
 - All available cell types of each tissue in our pre-trained models can be found in the [wiki page](https://github.com/ZJUFanLab/scDeepSort/wiki) of [`Human tissues and cell types`](https://github.com/ZJUFanLab/scDeepSort/wiki/Human-tissues-and-cell-types) and [`Mouse tissues and cell types`](https://github.com/ZJUFanLab/scDeepSort/wiki/Mouse-tissues-and-cell-types)
+- Please replace the cell types and subtypes of the `~anaconda3/deepsort-pretrained/celltype2subtype.xlsx` with the cell types of the scRNA-seq reference when using [`DeepSortClassifier`](https://scdeepsort.readthedocs.io/en/master/api.html#deepsortclassifier) to avoid error
 - To use scDeepSort in command line, please refer to the [`dev branch`](https://github.com/ZJUFanLab/scDeepSort/tree/dev)
-
 
 # Data availability 
 [![scDeepSort-Python](https://img.shields.io/badge/scDeepSort-Python-brightgreen)](https://github.com/ZJUFanLab/scDeepSort/releases/tag/scDeepSort) [![Pre-processed data](https://img.shields.io/badge/Pre--processed-Data-blue)](https://github.com/ZJUFanLab/scDeepSort/releases/tag/Pre_processed_data)
